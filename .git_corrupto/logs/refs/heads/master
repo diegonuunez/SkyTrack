@@ -1,0 +1,9 @@
+0000000000000000000000000000000000000000 c37780f1a50a46c1f63f96603f42327d941d0570 diegonuunez <diegonunco12@gmail.com> 1776106618 +0200	clone: from https://github.com/diegonuunez/SkyTrack
+c37780f1a50a46c1f63f96603f42327d941d0570 03d032d5877c64b73e55b33ce4f382b53167011e diegonuunez <diegonunco12@gmail.com> 1776108185 +0200	commit: Add models and serialzier at missions app
+03d032d5877c64b73e55b33ce4f382b53167011e 1d529c976d418e121da6f1c759927b5cc3dab509 diegonuunez <diegonunco12@gmail.com> 1776180602 +0200	commit: Add admin panel, urls and views
+1d529c976d418e121da6f1c759927b5cc3dab509 6b797efa12b90da30f6cefd2d210d62862601d0c diegonuunez <diegonunco12@gmail.com> 1776180659 +0200	commit (amend): Add admin panel, urls and views
+6b797efa12b90da30f6cefd2d210d62862601d0c 3f19478a2e32966e156e950e62b5a983316e5d3a diegonuunez <diegonunco12@gmail.com> 1776509003 +0200	commit: Add User logic and improve security
+3f19478a2e32966e156e950e62b5a983316e5d3a 0d29d07eb541d498eefd652217ed42ee32125af2 diegonuunez <diegonunco12@gmail.com> 1776509063 +0200	commit: Fix typo in frontend project
+0d29d07eb541d498eefd652217ed42ee32125af2 2d26dd64cef7103bd31ab7b5596da674e868461d diegonuunez <diegonunco12@gmail.com> 1776509099 +0200	commit (amend): Fix typo in frontend project
+2d26dd64cef7103bd31ab7b5596da674e868461d 96fe075c810db534dcd70d579011adb374a7a4a6 diegonuunez <diegonunco12@gmail.com> 1776714174 +0200	commit: Add different models,views and serializers (Trash commit)
+96fe075c810db534dcd70d579011adb374a7a4a6 e6ad1165b97f3849d74c73e0957a647f28d0ea91 diegonuunez <diegonunco12@gmail.com> 1776714831 +0200	commit: Add navbar component and login screen
