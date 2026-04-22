@@ -1,23 +1,52 @@
+const API_URL = 'http://127.0.0.1:8000/api';
+
 export const userService = {
   getProfile: async (token) => {
-    console.log("Intentando obtener perfil con token:", token); // <-- DEBUG
-    
-    const res = await fetch('http://127.0.0.1:8000/api/users/me/', {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`, // Verifica que el espacio tras 'Bearer' exista
-        'Content-Type': 'application/json'
+    if (!token) throw new Error("No token provided");
+
+    try {
+      const res = await fetch(`${API_URL}/users/me/`, {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${token.trim()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Si la respuesta no es 200-299, intentamos leer el error
+      if (!res.ok) {
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { detail: "Error desconocido del servidor" };
+        }
+        console.error("Error en API:", errorData);
+        throw new Error(errorData.detail || `Error ${res.status}`);
       }
+      
+      return await res.json();
+      
+    } catch (error) {
+      console.error("Error en la conexión con el servidor:", error);
+      throw error;
+    }
+  },
+  updateProfile: async (formData, token) => {
+    const res = await fetch(`${API_URL}/profile/update/`, {
+      method: 'PATCH',
+      headers: { 
+        'Authorization': `Bearer ${token.trim()}`
+        // IMPORTANTE: No pongas 'Content-Type', el navegador lo pone solo con FormData
+      },
+      body: formData
     });
 
-    console.log("Respuesta del servidor (status):", res.status); // <-- DEBUG
-    
     if (!res.ok) {
       const errorData = await res.json();
-      console.error("Detalle del error del backend:", errorData); // <-- ERROR REAL
-      throw new Error(`Error ${res.status}`);
+      throw new Error(errorData.detail || "Error al actualizar");
     }
     
-    return res.json();
+    return await res.json(); // Retorna el usuario actualizado
   }
 };

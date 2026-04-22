@@ -5,23 +5,24 @@ from .models import Profile
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['bio', 'location', 'favorite_drone', 'experience_level']
+        fields = ['avatar','bio', 'location', 'favorite_drone', 'experience_level']
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+    profile = ProfileSerializer() 
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'profile']
+        fields = ['username', 'email', 'profile']
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile', None)
+        profile_data = validated_data.pop('profile', {})
+        profile = instance.profile
+
+        instance.username = validated_data.get('username', instance.username)
+        instance.save()
+
+        for attr, value in profile_data.items():
+            setattr(profile, attr, value)
+        profile.save()
         
-        instance = super().update(instance, validated_data)
-
-        if profile_data:
-            profile_serializer = ProfileSerializer(instance.profile, data=profile_data, partial=True)
-            if profile_serializer.is_valid():
-                profile_serializer.save()
-
         return instance
