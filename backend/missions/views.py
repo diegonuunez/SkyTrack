@@ -1,13 +1,14 @@
 from rest_framework import generics
 from .models import Mission
 from .serializers import MissionSerializer
-from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwner
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 class MissionFeed(generics.ListAPIView):
     queryset = Mission.objects.all().order_by('-id')
@@ -56,3 +57,16 @@ class ToggleSaveMissionView(APIView):
         else:
             mission.saves.add(request.user)
             return Response({'message': 'Misión guardada con éxito'}, status=status.HTTP_200_OK)       
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_like(request, pk):
+    mission = Mission.objects.get(pk=pk)
+    # Lógica: si ya existe el like, bórralo, si no, créalo
+    if request.user in mission.likes.all():
+        mission.likes.remove(request.user)
+    else:
+        mission.likes.add(request.user)
+    return Response({'status': 'ok'})

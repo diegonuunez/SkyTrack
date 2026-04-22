@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import logo from '../assets/SkyTrackLogo.svg'
 
 const Navbar = () => {
   const { user } = useContext(AuthContext);
@@ -8,7 +9,9 @@ const Navbar = () => {
   return (
     <nav className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
       {/* Logo o Título de la App */}
-      <Link to="/" className="text-xl font-bold text-blue-600">SkyTrack</Link>
+      <Link to="/" className="text-xl font-bold text-blue-600">
+        <img src={logo} alt="Logo" className="h-22" />      
+      </Link>
 
       {/* Lado derecho: Enlaces y Perfil */}
       <div className="flex items-center gap-4">
