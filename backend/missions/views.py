@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from .models import Mission
 from .serializers import MissionSerializer
 from .permissions import IsOwner
@@ -52,13 +52,28 @@ class ToggleSaveMissionView(APIView):
         mission = get_object_or_404(Mission, pk=pk)
 
         if request.user in mission.saves.all():
-            mission.saves.remove(request.user)
+            mission.saved_by.remove(request.user)
             return Response({'message': 'Misión eliminada de tus guardados'}, status=status.HTTP_200_OK)
         else:
-            mission.saves.add(request.user)
+            mission.saved_by.add(request.user)
             return Response({'message': 'Misión guardada con éxito'}, status=status.HTTP_200_OK)       
 
+class SavedMissionsView(generics.ListAPIView):
+    serializer_class = MissionSerializer
+    permission_classes = [permissions.IsAuthenticated] # Solo usuarios logueados
 
+    def get_queryset(self):
+        # Filtramos las misiones donde el usuario actual esté en la lista de 'saved_by'
+        return Mission.objects.filter(saved_by=self.request.user).order_by('-id')
+
+# Vista para misiones ME GUSTA
+class LikedMissionsView(generics.ListAPIView):
+    serializer_class = MissionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtramos las misiones donde el usuario actual esté en la lista de 'likes'
+        return Mission.objects.filter(likes=self.request.user).order_by('-id')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

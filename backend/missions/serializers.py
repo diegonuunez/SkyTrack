@@ -29,12 +29,12 @@ class MissionSerializer(serializers.ModelSerializer):
         return False
     
     def get_saves_count(self, obj):
-            return obj.saves.count()
+            return obj.saved_by.count()
 
     def get_is_saved(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return obj.saves.filter(id=request.user.id).exists()
+            return obj.saved_by.filter(id=request.user.id).exists()
         return False
 
     def validate(self, data):

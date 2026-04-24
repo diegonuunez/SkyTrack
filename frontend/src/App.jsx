@@ -4,13 +4,31 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import PrivateRoute from './components/PrivateRoute';
 import EditProfilePage from './pages/EditProfile'; 
-
+import  MissionFeedPage  from "./pages/MissionFeedPage";
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/" element={<MissionFeedPage title="Descubre Misiones" feedType="feed" />} />
       
+      <Route 
+        path="/saved" 
+        element={
+          <PrivateRoute>
+            <MissionFeedPage title="Misiones Guardadas" feedType="saved" />
+          </PrivateRoute>
+        } 
+      />
+      
+      <Route 
+        path="/liked" 
+        element={
+          <PrivateRoute>
+            <MissionFeedPage title="Misiones que te gustan" feedType="liked" />
+          </PrivateRoute>
+        } 
+      />
       <Route 
         path="/profile" 
         element={
