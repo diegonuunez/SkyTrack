@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializer import UserSerializer,ProfileSerializer
 from rest_framework import generics, permissions
+from .models import Profile
 
 from .serializer import UserSerializer
 class UserMeView(APIView):
@@ -29,4 +30,15 @@ class ProfileUpdateView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.profile
+        profile, created = Profile.objects.get_or_create(user=self.request.user)
+        return profile
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        user_serializer = UserSerializer(request.user, context={'request': request})
+        return Response(user_serializer.data)

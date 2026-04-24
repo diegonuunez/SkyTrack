@@ -12,6 +12,16 @@ export const ProfileCard = () => {
     navigate('/login');
   };
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null;
+    
+    if (avatarPath.startsWith('http')) {
+      return `${avatarPath}?v=${Date.now()}`; 
+    }
+    
+    return `http://127.0.0.1:8000${avatarPath}?v=${Date.now()}`;
+  };
+
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -47,10 +57,16 @@ export const ProfileCard = () => {
           {/* Avatar con selector de archivo */}
           <label className="cursor-pointer group relative">
             <div className="w-24 h-24 bg-gray-200 rounded-full border-4 border-white flex items-center justify-center text-3xl font-bold text-blue-600 overflow-hidden">
-              {user.profile?.avatar ? (
-                <img src={`http://127.0.0.1:8000${user.profile.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+             {user.profile?.avatar ? (
+                <img 
+                  src={getAvatarUrl(user.profile.avatar)} 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover" 
+                />
               ) : (
-                user.username.charAt(0).toUpperCase()
+                <span className="text-3xl font-bold text-blue-600">
+                  {user.username.charAt(0).toUpperCase()}
+                </span>
               )}
             </div>
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rounded-full transition">
