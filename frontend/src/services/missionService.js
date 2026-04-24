@@ -3,10 +3,15 @@ const API_URL = 'http://127.0.0.1:8000/api';
 export const missionService = {
   // Pide todas las misiones (Feed principal)
   getFeed: async (token) => {
-    const res = await fetch(`${API_URL}/missions/`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error("Error al cargar el feed");
+    const headers = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`;
+    }
+
+    const res = await fetch(`${API_URL}/missions/`, { headers });
+    
+    if (!res.ok) throw new Error("Error al cargar el feed público");
     return res.json();
   },
 

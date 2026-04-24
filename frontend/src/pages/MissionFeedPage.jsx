@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { missionService } from '../services/missionService';
-import MissionCard from '../components/MissionCard'; // Ajusta la ruta a tu componente
+import MissionCard from '../components/MissionCard'; 
+import Navbar from '../components/Navbar';
 
 export const MissionFeedPage = ({ title, feedType }) => {
   const { token } = useContext(AuthContext);
@@ -28,15 +29,17 @@ export const MissionFeedPage = ({ title, feedType }) => {
       }
     };
 
-    if (token) {
+    if (feedType === 'feed' || token) {
       fetchMissions();
+    } else {
+      setLoading(false);
     }
   }, [feedType, token]); // Se vuelve a ejecutar si cambias de pestaña
 
   return (
+    
     <div className="max-w-3xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-extrabold text-gray-900 mb-8">{title}</h1>
-
       {loading && (
         <div className="text-center py-10 text-gray-500 font-bold animate-pulse">
           Cargando misiones...

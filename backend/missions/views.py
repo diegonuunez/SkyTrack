@@ -14,16 +14,11 @@ class MissionFeed(generics.ListAPIView):
     queryset = Mission.objects.all().order_by('-id')
     serializer_class = MissionSerializer
     permission_classes = [AllowAny]
+    
 class MissionList(generics.ListCreateAPIView):
     serializer_class = MissionSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-
-        serializer.save(user=self.request.user)
-
-    def get_queryset(self):
-        return Mission.objects.filter(user=self.request.user)
+    permission_classes = [AllowAny]
+    queryset = Mission.objects.all().order_by('-id')
 
 class MissionDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MissionSerializer
