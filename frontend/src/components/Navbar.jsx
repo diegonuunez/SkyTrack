@@ -16,7 +16,7 @@ const Navbar = () => {
   <nav className="bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-[1000] shadow-sm">      {/* 1. Logo y Enlaces Principales */}
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="SkyTrack Logo" className="h-8 w-auto" />      
+          <img src={logo} alt="SkyTrack Logo" className="h-20 w-auto" />      
         </Link>
 
         {/* Menú de Navegación */}
