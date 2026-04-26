@@ -4,3 +4,11 @@ venv/
 .env
 env/
 __pycache__/
+venv/
+env/
+db.sqlite3
+media/
+.env
+__pycache__/
+*.py[cod]
+*$py.class
