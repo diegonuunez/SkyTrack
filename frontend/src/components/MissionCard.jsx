@@ -1,16 +1,47 @@
-import React from 'react';
-import MapComponent from './Map'; // Tu mapa actualizado
+import React, { useState, useContext } from 'react'; // <-- Corregido: Importamos los hooks
+import MapComponent from './Map'; 
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { missionService } from '../services/missionService';
 
 const MissionCard = ({ mission }) => {
+  // <-- Corregido: Extraemos el token para poder enviarlo al backend
+  const { token } = useContext(AuthContext); 
+
   // Verificación de seguridad para los datos
   const userName = mission?.user_name || 'Piloto';
   const missionName = mission?.name || 'Misión sin nombre';
   const description = mission?.description || 'Sin descripción disponible.';
   const userExperience = mission?.user_experience || 'None';
   
-  // NUEVO: Extraemos las coordenadas del array de telemetría de esta misión
+  // Estados para la Interfaz Optimista (Likes)
+  const [isLiked, setIsLiked] = useState(mission?.is_liked || false);
+  const [likesCount, setLikesCount] = useState(mission?.likes_count || 0);
+  
+  // Extraemos las coordenadas del array de telemetría de esta misión
   const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
+  
+  const handleLike = async () => {
+    if (!token) {
+      alert("Debes iniciar sesión para dar me gusta a una misión.");
+      return;
+    }
+
+    // Actualizamos la UI inmediatamente (Optimistic UI)
+    const newIsLiked = !isLiked;
+    setIsLiked(newIsLiked);
+    setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
+
+    try {
+      // Le avisamos al backend en segundo plano
+      await missionService.toggleLike(mission.id, token);
+    } catch (error) {
+      // Si el backend falla, revertimos el botón a su estado original
+      setIsLiked(!newIsLiked);
+      setLikesCount(prev => !newIsLiked ? prev + 1 : prev - 1);
+      console.error("Error al dar like:", error);
+    }
+  };
   
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 border border-gray-100 hover:shadow-xl transition-all duration-300">
@@ -54,10 +85,19 @@ const MissionCard = ({ mission }) => {
       {/* 4. Pie de carta: Métricas y acciones */}
       <div className="flex justify-between items-center pt-5 border-t border-gray-100">
         <div className="flex gap-6">
-          <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors pointer-events-auto">
-            <span className="text-xl">❤️</span> 
-            <span className="font-bold">{mission.likes_count || 0}</span>
+          
+          {/* BOTÓN DE LIKE ACTUALIZADO */}
+          <button 
+            onClick={handleLike}
+            className={`flex items-center gap-2 transition-colors pointer-events-auto ${
+              isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
+            }`}
+          >
+            {/* Si está likeado mostramos corazón lleno, si no, corazón vacío */}
+            <span className="text-xl">{isLiked ? '❤️' : '🤍'}</span> 
+            <span className="font-bold">{likesCount}</span>
           </button>
+          
           <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors pointer-events-auto">
             <span className="text-xl">💬</span>
             <span className="font-bold">Comentar</span>

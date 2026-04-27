@@ -40,5 +40,20 @@ export const missionService = {
     const res = await fetch(`${API_URL}/missions/${id}/`, { headers });
     if (!res.ok) throw new Error("Misión no encontrada");
     return res.json();
-  }
+  },
+
+  toggleLike: async (id, token) => {
+    const res = await fetch(`${API_URL}/missions/${id}/like/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) throw new Error("Error al modificar el like");
+    return res.json();
+  },
+
+
 };

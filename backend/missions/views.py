@@ -13,7 +13,6 @@ from rest_framework.response import Response
 class MissionFeed(generics.ListAPIView):
     queryset = Mission.objects.all().order_by('-id')
     serializer_class = MissionSerializer
-    permission_classes = [AllowAny]
     
 class MissionList(generics.ListCreateAPIView):
     serializer_class = MissionSerializer
@@ -28,18 +27,24 @@ class MissionDetail(generics.RetrieveUpdateDestroyAPIView):
         return Mission.objects.filter(user=self.request.user)
     
 class ToggleLikeMissionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         mission = get_object_or_404(Mission, pk=pk)
+        user = request.user
 
-        if request.user in mission.likes.all():
-            mission.likes.remove(request.user)
-            return Response({'message': 'Like quitado'}, status=status.HTTP_200_OK)
+        if user in mission.likes.all():
+            mission.likes.remove(user)
+            is_liked = False
         else:
-            mission.likes.add(request.user)
-            return Response({'message': 'Like añadido'}, status=status.HTTP_200_OK)
-        
+            mission.likes.add(user)
+            is_liked = True
+
+        return Response({
+            'is_liked': is_liked,
+            'likes_count': mission.likes.count()
+        }, status=status.HTTP_200_OK)
+    
 class ToggleSaveMissionView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -74,7 +79,7 @@ class MissionDetailView(generics.RetrieveAPIView):
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
     permission_classes = [permissions.AllowAny]
-
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_like(request, pk):
