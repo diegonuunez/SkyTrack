@@ -10,6 +10,7 @@ class Mission(models.Model):
     drone_model = models.CharField(max_length=100,default="Unknown")
     likes = models.ManyToManyField(User, related_name='liked_missions', blank=True)
     saved_by = models.ManyToManyField(User, related_name='saved_missions', blank=True)    
+    
     def __str__(self):
         return f"{self.name} - {self.date.strftime('%Y-%m-%d')}"
     

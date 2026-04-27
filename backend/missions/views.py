@@ -70,6 +70,11 @@ class LikedMissionsView(generics.ListAPIView):
         # Filtramos las misiones donde el usuario actual esté en la lista de 'likes'
         return Mission.objects.filter(likes=self.request.user).order_by('-id')
 
+class MissionDetailView(generics.RetrieveAPIView):
+    queryset = Mission.objects.all()
+    serializer_class = MissionSerializer
+    permission_classes = [permissions.AllowAny]
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_like(request, pk):

@@ -31,5 +31,14 @@ export const missionService = {
     });
     if (!res.ok) throw new Error("Error al cargar me gusta");
     return res.json();
+  },
+
+  getMissionById: async (id, token) => {
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token.trim()}`;
+
+    const res = await fetch(`${API_URL}/missions/${id}/`, { headers });
+    if (!res.ok) throw new Error("Misión no encontrada");
+    return res.json();
   }
 };

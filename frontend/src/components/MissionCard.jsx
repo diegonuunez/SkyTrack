@@ -1,12 +1,16 @@
 import React from 'react';
-import MapComponent from './Map'; 
+import MapComponent from './Map'; // Tu mapa actualizado
+import { Link } from 'react-router-dom';
 
 const MissionCard = ({ mission }) => {
   // Verificación de seguridad para los datos
-  const userName = mission?.user_name|| 'Piloto';
+  const userName = mission?.user_name || 'Piloto';
   const missionName = mission?.name || 'Misión sin nombre';
   const description = mission?.description || 'Sin descripción disponible.';
   const userExperience = mission?.user_experience || 'None';
+  
+  // NUEVO: Extraemos las coordenadas del array de telemetría de esta misión
+  const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
   
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 border border-gray-100 hover:shadow-xl transition-all duration-300">
@@ -32,37 +36,43 @@ const MissionCard = ({ mission }) => {
       {/* 2. Cuerpo: Información técnica */}
       <div className="mb-5">
         <h3 className="text-2xl font-extrabold text-gray-900 mb-2">{missionName}</h3>
-        <p className="text-gray-600 leading-relaxed text-md">{description}</p>
+        <p className="text-gray-600 leading-relaxed text-md truncate">{description}</p>
       </div>
 
-      {/* 3. Mapa: Integración con tu componente existente */}
-      <div className="w-full h-56 rounded-2xl mb-6 overflow-hidden border-2 border-gray-100 shadow-inner">
-        <MapComponent 
-          lat={mission.latitude} 
-          lng={mission.longitude} 
-          zoom={13} 
-        />
+      {/* 3. Mapa: Mostramos la ruta o un aviso si no hay datos */}
+      {/* Le añadimos relative z-0 para que el mapa no tape tu Navbar */}
+      <div className="w-full h-56 rounded-2xl mb-6 overflow-hidden border-2 border-gray-100 shadow-inner relative z-0 pointer-events-none">
+        {mapCoordinates.length > 0 ? (
+          <MapComponent trackData={mapCoordinates} />
+        ) : (
+          <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400 font-semibold">
+            <span>🗺️ Sin datos de vuelo</span>
+          </div>
+        )}
       </div>
 
       {/* 4. Pie de carta: Métricas y acciones */}
       <div className="flex justify-between items-center pt-5 border-t border-gray-100">
         <div className="flex gap-6">
-          <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors">
+          <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors pointer-events-auto">
             <span className="text-xl">❤️</span> 
             <span className="font-bold">{mission.likes_count || 0}</span>
           </button>
-          <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors">
+          <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors pointer-events-auto">
             <span className="text-xl">💬</span>
             <span className="font-bold">Comentar</span>
           </button>
         </div>
         
-        <button className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors">
+        <Link 
+          to={`/mission/${mission.id}`} 
+          className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors inline-block text-center pointer-events-auto"
+        >
           Ver Detalles
-        </button>
+        </Link>
       </div>
     </div>
   );
 };
-
+ 
 export default MissionCard;
