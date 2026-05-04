@@ -16,7 +16,6 @@ export const MissionFeedPage = ({ title, feedType }) => {
       setError(null);
       try {
         let data;
-        // Dependiendo del prop 'feedType', llamamos a un servicio distinto
         if (feedType === 'feed') data = await missionService.getFeed(token);
         if (feedType === 'saved') data = await missionService.getSaved(token);
         if (feedType === 'liked') data = await missionService.getLiked(token);
@@ -34,7 +33,7 @@ export const MissionFeedPage = ({ title, feedType }) => {
     } else {
       setLoading(false);
     }
-  }, [feedType, token]); // Se vuelve a ejecutar si cambias de pestaña
+  }, [feedType, token]);
 
   return (
     

@@ -13,7 +13,6 @@ export const userService = {
         }
       });
 
-      // Si la respuesta no es 200-299, intentamos leer el error
       if (!res.ok) {
         let errorData;
         try {
@@ -37,7 +36,6 @@ export const userService = {
       method: 'PATCH',
       headers: { 
         'Authorization': `Bearer ${token.trim()}`
-        // IMPORTANTE: No pongas 'Content-Type', el navegador lo pone solo con FormData
       },
       body: formData
     });
@@ -47,6 +45,6 @@ export const userService = {
       throw new Error(errorData.detail || "Error al actualizar");
     }
     
-    return await res.json(); // Retorna el usuario actualizado
+    return await res.json(); 
   }
 };
