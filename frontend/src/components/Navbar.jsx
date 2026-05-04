@@ -13,8 +13,10 @@ const Navbar = () => {
   };
 
   return (
-  <nav className="bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-[1000] shadow-sm">      {/* 1. Logo y Enlaces Principales */}
-      <div className="flex items-center gap-8">
+    <nav className="bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-[1000] shadow-sm">
+      
+      {/* 1. IZQUIERDA: Logo y Menú (ocupa 1/3 del espacio) */}
+      <div className="flex-1 flex items-center gap-8">
         <Link to="/" className="flex items-center">
           <img src={logo} alt="SkyTrack Logo" className="h-20 w-auto" />      
         </Link>
@@ -30,7 +32,6 @@ const Navbar = () => {
             Explorar
           </NavLink>
 
-          {/* ESTO SOLO SE MUESTRA SI HAY USUARIO */}
           {user && (
             <>
               <NavLink 
@@ -54,14 +55,26 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* 2. Lado derecho: Perfil o Login */}
-      <div className="flex items-center gap-4">
+      {/* 2. CENTRO: Botón Destacado de Crear Misión (ocupa 1/3 y centra el contenido) */}
+      <div className="flex-1 flex justify-center">
+        {user && (
+          <Link 
+            to="/create-mission" 
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl leading-none">+</span> Crear Misión
+          </Link>
+        )}
+      </div>
+
+      {/* 3. DERECHA: Perfil o Login (ocupa 1/3 y empuja a la derecha) */}
+      <div className="flex-1 flex justify-end items-center gap-4">
         {user ? (
           <Link 
             to="/profile" 
             className="flex items-center gap-3 bg-gray-50 pr-4 pl-1.5 py-1.5 rounded-full border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group"
           >
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white font-bold shadow-inner">
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white font-bold shadow-inner flex-shrink-0">
               {user.profile?.avatar ? (
                 <img 
                   src={getAvatarUrl(user.profile.avatar)} 
@@ -87,6 +100,7 @@ const Navbar = () => {
           </Link>
         )}
       </div>
+
     </nav>
   );
 };
