@@ -55,5 +55,18 @@ export const missionService = {
     return res.json();
   },
 
+  toggleSave: async (id, token) => {
+    const res = await fetch(`${API_URL}/missions/${id}/save/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) throw new Error("Error al guardar la misión");
+    return res.json();
+  }
+
 
 };

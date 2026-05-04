@@ -1,6 +1,6 @@
 # backend/missions/urls.py
 from django.urls import path
-from .views import MissionList, MissionDetailView, ToggleLikeMissionView, ToggleSaveMissionView, MissionFeed, SavedMissionsView, LikedMissionsView
+from .views import MissionList, MissionDetailView, ToggleLikeMissionView, ToggleSaveView, MissionFeed, SavedMissionsView, LikedMissionsView
 
 urlpatterns = [
     path('feed/', MissionFeed.as_view(), name='mission-feed'), 
@@ -9,6 +9,6 @@ urlpatterns = [
     path('saved/', SavedMissionsView.as_view(), name='mission-save'),
     path('liked/', LikedMissionsView.as_view(), name='mission-liked'),
     path('<int:pk>/like/', ToggleLikeMissionView.as_view(), name='mission-like-toggle'),
-    
+    path('<int:pk>/save/', ToggleSaveView.as_view(), name='mission-save-toggle'),
         
 ]

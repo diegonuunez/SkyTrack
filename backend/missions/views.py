@@ -44,36 +44,40 @@ class ToggleLikeMissionView(APIView):
             'is_liked': is_liked,
             'likes_count': mission.likes.count()
         }, status=status.HTTP_200_OK)
-    
-class ToggleSaveMissionView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
-        mission = get_object_or_404(Mission, pk=pk)
-
-        if request.user in mission.saves.all():
-            mission.saved_by.remove(request.user)
-            return Response({'message': 'Misión eliminada de tus guardados'}, status=status.HTTP_200_OK)
-        else:
-            mission.saved_by.add(request.user)
-            return Response({'message': 'Misión guardada con éxito'}, status=status.HTTP_200_OK)       
+           
 
 class SavedMissionsView(generics.ListAPIView):
     serializer_class = MissionSerializer
-    permission_classes = [permissions.IsAuthenticated] # Solo usuarios logueados
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtramos las misiones donde el usuario actual esté en la lista de 'saved_by'
         return Mission.objects.filter(saved_by=self.request.user).order_by('-id')
 
-# Vista para misiones ME GUSTA
 class LikedMissionsView(generics.ListAPIView):
     serializer_class = MissionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtramos las misiones donde el usuario actual esté en la lista de 'likes'
         return Mission.objects.filter(likes=self.request.user).order_by('-id')
+    
+class ToggleSaveView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        mission = get_object_or_404(Mission, pk=pk)
+        user = request.user
+
+        if user in mission.saved_by.all():
+            mission.saved_by.remove(user)
+            is_saved = False
+        else:
+            mission.saved_by.add(user)
+            is_saved = True
+
+        return Response({
+            'is_saved': is_saved,
+            'saves_count': mission.saved_by.count()
+        }, status=status.HTTP_200_OK)
 
 class MissionDetailView(generics.RetrieveAPIView):
     queryset = Mission.objects.all()
@@ -84,7 +88,6 @@ class MissionDetailView(generics.RetrieveAPIView):
 @permission_classes([IsAuthenticated])
 def toggle_like(request, pk):
     mission = Mission.objects.get(pk=pk)
-    # Lógica: si ya existe el like, bórralo, si no, créalo
     if request.user in mission.likes.all():
         mission.likes.remove(request.user)
     else:
