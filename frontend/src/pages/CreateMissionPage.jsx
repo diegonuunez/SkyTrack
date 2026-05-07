@@ -1,11 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+// IMPORTAMOS EL CONTEXTO Y EL SERVICIO
+import { AuthContext } from '../context/AuthContext';
+import { missionService } from '../services/missionService';
 
 export const CreateMissionPage = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); // Referencia oculta para el input de archivo
+  const fileInputRef = useRef(null); 
   
-  // Estados del formulario y del archivo
+  // EXTRAEMOS EL TOKEN DEL USUARIO LOGUEADO
+  const { token } = useContext(AuthContext);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -13,8 +18,8 @@ export const CreateMissionPage = () => {
     date: new Date().toISOString().split('T')[0]
   });
   
-  const [file, setFile] = useState(null); // Aquí guardamos el CSV
-  const [isDragging, setIsDragging] = useState(false); // Para cambiar el color al arrastrar
+  const [file, setFile] = useState(null); 
+  const [isDragging, setIsDragging] = useState(false); 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- MANEJADORES DE TEXTO ---
@@ -25,7 +30,7 @@ export const CreateMissionPage = () => {
 
   // --- MANEJADORES DEL DRAG & DROP ---
   const handleDragOver = (e) => {
-    e.preventDefault(); // Evita que el navegador abra el archivo en otra pestaña
+    e.preventDefault(); 
     setIsDragging(true);
   };
 
@@ -56,27 +61,45 @@ export const CreateMissionPage = () => {
 
   const removeFile = () => {
     setFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = ""; // Resetea el input oculto
+    if (fileInputRef.current) fileInputRef.current.value = ""; 
   };
 
-  // --- MANEJADOR DE ENVÍO ---
-  const handleSubmit = (e) => {
+  // --- MANEJADOR DE ENVÍO REAL ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!file) {
       alert("Por favor, sube un archivo .csv con la ruta de la misión.");
+      return;
+    }
+    if (!token) {
+      alert("Debes iniciar sesión para crear una misión.");
       return;
     }
 
     setIsSubmitting(true);
 
-    // SIMULACIÓN: Aquí prepararíamos un FormData para enviar a Django
-    console.log("Datos de texto:", formData);
-    console.log("Archivo CSV adjunto:", file.name, `(${(file.size / 1024).toFixed(2)} KB)`);
-    
-    setTimeout(() => {
+    // 1. PREPARAMOS EL FORMDATA
+    const dataToSend = new FormData();
+    dataToSend.append('name', formData.name);
+    dataToSend.append('description', formData.description);
+    dataToSend.append('drone_model', formData.drone_model);
+    dataToSend.append('date', formData.date);
+    dataToSend.append('file', file);
+
+    try {
+      // 2. ENVIAMOS AL BACKEND (Postgres + MongoDB)
+      await missionService.uploadMission(dataToSend, token);
+      
+      alert("¡Misión publicada con éxito!");
+      navigate('/'); // Redirigimos al Feed principal
+      
+    } catch (error) {
+      console.error("Error al publicar la misión:", error);
+      alert(error.message || "Hubo un error al subir la misión. Revisa tu archivo CSV.");
+    } finally {
       setIsSubmitting(false);
-      alert("¡Misión y telemetría listas! Revisa la consola.");
-    }, 1000);
+    }
   };
 
   return (
@@ -121,7 +144,7 @@ export const CreateMissionPage = () => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                onClick={() => fileInputRef.current.click()} // Al hacer clic, abre el buscador
+                onClick={() => fileInputRef.current.click()} 
                 className={`w-full border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
                   isDragging 
                     ? 'border-blue-500 bg-blue-50 scale-[1.02]' 
@@ -134,7 +157,6 @@ export const CreateMissionPage = () => {
                 </p>
                 <p className="text-sm text-gray-500">o haz clic para buscar en tu PC</p>
                 
-                {/* Input real (Oculto) */}
                 <input 
                   type="file" 
                   accept=".csv" 
@@ -144,7 +166,6 @@ export const CreateMissionPage = () => {
                 />
               </div>
             ) : (
-              /* ESTADO: Archivo cargado con éxito */
               <div className="w-full border-2 border-green-200 bg-green-50 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="w-10 h-10 bg-green-200 text-green-700 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
@@ -187,4 +208,5 @@ export const CreateMissionPage = () => {
     </div>
   );
 };
+
 export default CreateMissionPage;

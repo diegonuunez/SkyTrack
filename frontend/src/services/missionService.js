@@ -66,6 +66,20 @@ export const missionService = {
     
     if (!res.ok) throw new Error("Error al guardar la misión");
     return res.json();
+  },
+
+  uploadMission: async (missionData, token) => {
+    const response = await fetch('http://127.0.0.1:8000/api/missions/upload/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: missionData
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al subir la misión');
+    return data;
   }
 
 

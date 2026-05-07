@@ -8,6 +8,9 @@ class Mission(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)
     drone_model = models.CharField(max_length=100,default="Unknown")
+    visibility = models.CharField(max_length=20, default='public')
+    max_alt_m = models.FloatField(default=0.0)
+    max_vel_ms = models.FloatField(default=0.0)
     likes = models.ManyToManyField(User, related_name='liked_missions', blank=True)
     saved_by = models.ManyToManyField(User, related_name='saved_missions', blank=True)    
     
