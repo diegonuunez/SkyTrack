@@ -71,7 +71,7 @@ export const MissionDetailsPage = () => {
       {/* Aquí irá el mapa grande en el futuro */}
       <div className="bg-gray-200 w-full h-96 rounded-2xl flex items-center justify-center text-gray-500 font-bold mb-8 shadow-inner border-2 border-dashed border-gray-300">
         {mission?.points?.length > 0 ? (
-        <MapComponent trackData={mapCoordinates} interactive={true} />
+        <MapView trackData={mapCoordinates} interactive={true} />
       ) : (
         <div className="w-full h-[500px] bg-gray-50 flex flex-col items-center justify-center text-gray-400 rounded-2xl border border-dashed border-gray-300">
             <span className="text-5xl mb-4">🗺️</span>
