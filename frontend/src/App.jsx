@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import EditProfilePage from './pages/EditProfile'; 
 import MissionFeedPage from './pages/MissionFeedPage';
 import MissionDetailsPage from './pages/MissionDetailsPage';
+import ProfilePage from './pages/ProfilePage'; 
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/create-mission" element={<PrivateRoute><CreateMissionPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/edit-profile" element={<PrivateRoute><EditProfilePage /></PrivateRoute>} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
         </Routes>
       </main>
 

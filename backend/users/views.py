@@ -2,12 +2,21 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .serializer import UserSerializer,ProfileSerializer
-from rest_framework import generics, permissions
-from .models import Profile
+from rest_framework import status, generics, permissions
 
-from .serializer import UserSerializer
+# Usamos get_user_model para mayor seguridad (si usas el User de Django)
+from django.contrib.auth import get_user_model 
+User = get_user_model()
+
+from .models import Profile
+from .serializer import UserSerializer, ProfileSerializer, UserProfileSerializer
+
+# Importamos todo de 'missions' de manera uniforme
+from missions.models import Mission
+from missions.serializers import MissionSerializer
+from missions.views import TelemetryListMixin 
+
+
 class UserMeView(APIView):
     permission_classes = [IsAuthenticated] # Solo si hay token válido
 
@@ -16,13 +25,13 @@ class UserMeView(APIView):
         return Response(serializer.data)
     
     def patch(self, request):
-            serializer = UserSerializer(request.user, data=request.data, partial=True)
-            
-            if serializer.is_valid():
-                serializer.save() 
-                return Response(serializer.data)
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class ProfileUpdateView(generics.UpdateAPIView):
@@ -40,5 +49,20 @@ class ProfileUpdateView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
+        # Devolvemos el usuario actualizado
         user_serializer = UserSerializer(request.user, context={'request': request})
         return Response(user_serializer.data)
+
+
+class UserProfileDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    lookup_field = 'username'
+
+
+class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
+    serializer_class = MissionSerializer
+    
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        return Mission.objects.filter(user__username=username).order_by('-id')

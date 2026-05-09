@@ -16,7 +16,7 @@ const MissionCard = ({ mission }) => {
   const [isLiked, setIsLiked] = useState(mission?.is_liked || false);
   const [likesCount, setLikesCount] = useState(mission?.likes_count || 0);
 
-  // NUEVO: Estados para Guardados (Bookmarks)
+  // Estados para Guardados (Bookmarks)
   const [isSaved, setIsSaved] = useState(mission?.is_saved || false);
   const [savesCount, setSavesCount] = useState(mission?.saves_count || 0);
   
@@ -40,7 +40,6 @@ const MissionCard = ({ mission }) => {
     }
   };
 
-  // NUEVO: Función para manejar el guardado
   const handleSave = async () => {
     if (!token) {
       alert("Debes iniciar sesión para guardar una misión.");
@@ -64,15 +63,22 @@ const MissionCard = ({ mission }) => {
       
       {/* 1. Cabecera */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+        {/* AHORA ESTO ES UN LINK AL PERFIL DEL USUARIO */}
+        <Link 
+          to={`/profile/${userName}`} 
+          className="flex items-center group cursor-pointer"
+        >
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:ring-4 ring-blue-100 transition-all">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div className="ml-4">
-            <h4 className="font-bold text-gray-900 text-lg">{userName}</h4>
+            <h4 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
+              {userName}
+            </h4>
             <p className="text-xs text-gray-400 uppercase tracking-wider">{userExperience}</p>
           </div>
-        </div>
+        </Link>
+
         <span className={`px-4 py-1 text-xs font-bold rounded-full uppercase shadow-sm ${
           mission.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
         }`}>
@@ -116,7 +122,6 @@ const MissionCard = ({ mission }) => {
             <span className="font-bold">Comentar</span>
           </button>
 
-          {/* NUEVO: BOTÓN DE GUARDAR */}
           <button 
             onClick={handleSave}
             className={`flex items-center gap-1.5 transition-colors pointer-events-auto ${
