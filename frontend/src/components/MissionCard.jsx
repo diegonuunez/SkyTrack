@@ -3,10 +3,12 @@ import MapComponent from './Map';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { missionService } from '../services/missionService';
+import CommentSection from '../components/CommentSection';
 
 const MissionCard = ({ mission }) => {
-  const { token } = useContext(AuthContext); 
-
+  // Extraemos token y user del contexto de autenticación
+  const { token, user } = useContext(AuthContext); 
+  
   const userName = mission?.user_name || 'Piloto';
   const missionName = mission?.name || 'Misión sin nombre';
   const description = mission?.description || 'Sin descripción disponible.';
@@ -19,6 +21,9 @@ const MissionCard = ({ mission }) => {
   // Estados para Guardados (Bookmarks)
   const [isSaved, setIsSaved] = useState(mission?.is_saved || false);
   const [savesCount, setSavesCount] = useState(mission?.saves_count || 0);
+
+  // Estado para mostrar/ocultar comentarios
+  const [showComments, setShowComments] = useState(false);
   
   const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
   
@@ -63,7 +68,6 @@ const MissionCard = ({ mission }) => {
       
       {/* 1. Cabecera */}
       <div className="flex items-center justify-between mb-5">
-        {/* AHORA ESTO ES UN LINK AL PERFIL DEL USUARIO */}
         <Link 
           to={`/profile/${userName}`} 
           className="flex items-center group cursor-pointer"
@@ -103,13 +107,13 @@ const MissionCard = ({ mission }) => {
         )}
       </div>
 
-      {/* 4. Pie de carta */}
+      {/* 4. Pie de carta (Botones de acción) */}
       <div className="flex justify-between items-center pt-5 border-t border-gray-100">
         <div className="flex gap-5">
           
           <button 
             onClick={handleLike}
-            className={`flex items-center gap-1.5 transition-colors pointer-events-auto ${
+            className={`flex items-center gap-1.5 transition-colors ${
               isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
             }`}
           >
@@ -117,30 +121,45 @@ const MissionCard = ({ mission }) => {
             <span className="font-bold">{likesCount}</span>
           </button>
           
-          <button className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors pointer-events-auto">
+          {/* Botón para alternar comentarios */}
+          <button 
+            onClick={() => setShowComments(!showComments)}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors"
+          >
             <span className="text-xl">💬</span>
-            <span className="font-bold">Comentar</span>
+            <span className="font-bold">{showComments ? 'Ocultar' : 'Comentar'}</span>
           </button>
 
           <button 
             onClick={handleSave}
-            className={`flex items-center gap-1.5 transition-colors pointer-events-auto ${
+            className={`flex items-center gap-1.5 transition-colors ${
               isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
             }`}
           >
             <span className="text-xl">{isSaved ? '🔖' : '📑'}</span>
-            <span className="font-bold">Guardar</span>
+            <span className="font-bold">{savesCount}</span>
           </button>
 
         </div>
         
         <Link 
           to={`/mission/${mission.id}`} 
-          className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors inline-block text-center pointer-events-auto"
+          className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors inline-block text-center"
         >
           Ver Detalles
         </Link>
       </div>
+
+      {/* 5. Sección de Comentarios (Se muestra al pulsar el botón de mensaje) */}
+      {showComments && (
+        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <CommentSection 
+            missionId={mission.id} 
+            token={token} 
+            currentUser={user} 
+          />
+        </div>
+      )}
     </div>
   );
 };

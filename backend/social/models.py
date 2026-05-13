@@ -29,10 +29,8 @@ class Save(models.Model):
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE, related_name='comments')
-    content = models.TextField()
+    text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    is_edited = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"Comment by {self.user.username} on {self.mission.name}"
+    class Meta:
+        ordering = ['-created_at']

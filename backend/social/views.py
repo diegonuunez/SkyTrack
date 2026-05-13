@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status, generics  # <-- Añadido 'generics'
 from django.shortcuts import get_object_or_404
-
+from .serializers import CommentSerializer
+from .models import Comment
 from missions.models import Mission
 from missions.serializers import MissionSerializer  # <-- Importamos el serializador
 from missions.views import TelemetryListMixin       # <-- Importamos tu mixin estrella
@@ -71,3 +72,14 @@ class SavedMissionsListView(TelemetryListMixin, generics.ListAPIView):
 
     def get_queryset(self):
         return Mission.objects.filter(saved_by__user=self.request.user).order_by('-saved_by__created_at')
+    
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Comment.objects.filter(mission_id=self.kwargs['mission_id'])
+
+    def perform_create(self, serializer):
+        mission = get_object_or_404(Mission, id=self.kwargs['mission_id'])
+        serializer.save(user=self.request.user, mission=mission)

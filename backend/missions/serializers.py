@@ -1,7 +1,5 @@
-from rest_framework import serializers
+from rest_framework import serializers  # <--- ESTA ES LA QUE FALTA
 from .models import Mission
-
-
 
 class MissionSerializer(serializers.ModelSerializer):
     
@@ -10,6 +8,7 @@ class MissionSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField() # <--- NUEVO
     
     # Datos de usuario seguros
     user_name = serializers.ReadOnlyField(source='user.username')
@@ -20,13 +19,21 @@ class MissionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user_name', 'user_experience', 'user', 'name', 
             'date', 'description', 'drone_model', 
-            'likes_count', 'is_liked', 'saves_count', 'is_saved'
+            'likes_count', 'is_liked', 'saves_count', 'is_saved',
+            'comments_count' # <--- NUEVO
         ]
 
     # ==========================================
     # LÓGICA SOCIAL (Acoplamiento Débil)
     # ==========================================
     
+    def get_comments_count(self, obj):
+        try:
+            # 'comments' será el related_name que definiremos en el modelo Comment
+            return obj.comments.count()
+        except AttributeError:
+            return 0
+
     def get_likes_count(self, obj):
         try:
             return obj.likes.count() 
@@ -62,7 +69,6 @@ class MissionSerializer(serializers.ModelSerializer):
     # ==========================================
 
     def get_user_experience(self, obj):
-        # Evita el Error 500 si el usuario aún no tiene un perfil creado en la BBDD
         if hasattr(obj.user, 'profile'):
             return obj.user.profile.experience_level
         return "Piloto"
