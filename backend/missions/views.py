@@ -26,7 +26,6 @@ class TelemetryListMixin:
         response = super().list(request, *args, **kwargs)
         missions_data = response.data
 
-        # Extraer lista dependiendo de si hay paginación
         if isinstance(missions_data, dict) and 'results' in missions_data:
             missions_list = missions_data['results']
         else:
@@ -37,14 +36,12 @@ class TelemetryListMixin:
         if not mission_ids:
             return response
 
-        # Búsqueda masiva en Mongo
         collection = get_telemetry_collection()
         all_telemetry = list(collection.find(
             {"mission_id": {"$in": mission_ids}},
             {"_id": 0, "mission_id": 1, "latitude": 1, "longitude": 1}
         ))
 
-        # Agrupación
         points_map = {}
         for p in all_telemetry:
             m_id = p.get('mission_id')
@@ -92,19 +89,6 @@ class MissionList(TelemetryListMixin, generics.ListCreateAPIView):
     permission_classes = [AllowAny]
     queryset = Mission.objects.all().order_by('-id')
 
-class SavedMissionsView(TelemetryListMixin, generics.ListAPIView):
-    serializer_class = MissionSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Mission.objects.filter(saved_by=self.request.user).order_by('-id')
-
-class LikedMissionsView(TelemetryListMixin, generics.ListAPIView):
-    serializer_class = MissionSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Mission.objects.filter(likes=self.request.user).order_by('-id')
 
 # ==========================================
 # VISTAS DE DETALLE (Usando el TelemetryRetrieveMixin)
@@ -126,43 +110,6 @@ class MissionDetailView(TelemetryRetrieveMixin, generics.RetrieveAPIView):
 # VISTAS DE ACCIÓN Y SUBIDA
 # ==========================================
 
-class ToggleLikeMissionView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        mission = get_object_or_404(Mission, pk=pk)
-        user = request.user
-
-        if user in mission.likes.all():
-            mission.likes.remove(user)
-            is_liked = False
-        else:
-            mission.likes.add(user)
-            is_liked = True
-
-        return Response({
-            'is_liked': is_liked,
-            'likes_count': mission.likes.count()
-        }, status=status.HTTP_200_OK)
-
-class ToggleSaveView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        mission = get_object_or_404(Mission, pk=pk)
-        user = request.user
-
-        if user in mission.saved_by.all():
-            mission.saved_by.remove(user)
-            is_saved = False
-        else:
-            mission.saved_by.add(user)
-            is_saved = True
-
-        return Response({
-            'is_saved': is_saved,
-            'saves_count': mission.saved_by.count()
-        }, status=status.HTTP_200_OK)
 
 class MissionUploadView(APIView):
     def post(self, request):

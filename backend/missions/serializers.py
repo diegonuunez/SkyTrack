@@ -1,47 +1,68 @@
 from rest_framework import serializers
-from .models import Mission, TelemetryPoint
-from users.models import Profile
+from .models import Mission
 
-class TelemetryPointSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TelemetryPoint
-        fields = ['timestamp', 'latitude', 'longitude', 'altitude', 'speed']
+
 
 class MissionSerializer(serializers.ModelSerializer):
-    points = TelemetryPointSerializer(many=True, read_only=True)
+    
+    # Campos calculados dinámicamente
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    
+    # Datos de usuario seguros
     user_name = serializers.ReadOnlyField(source='user.username')
-    user_experience = serializers.ReadOnlyField(source='user.profile.experience_level')    
+    user_experience = serializers.SerializerMethodField() 
+
     class Meta:
         model = Mission
-        fields = ['id','user_name','user_experience','user', 'name', 'date', 'description', 'drone_model','likes_count','is_liked','saves_count','is_saved','points']
+        fields = [
+            'id', 'user_name', 'user_experience', 'user', 'name', 
+            'date', 'description', 'drone_model', 
+            'likes_count', 'is_liked', 'saves_count', 'is_saved'
+        ]
 
+    # ==========================================
+    # LÓGICA SOCIAL (Acoplamiento Débil)
+    # ==========================================
+    
     def get_likes_count(self, obj):
+        try:
             return obj.likes.count() 
+        except AttributeError:
+            return 0
     
     def get_is_liked(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.likes.filter(id=request.user.id).exists()
+        try:
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                return obj.likes.filter(user=request.user).exists()
+        except AttributeError:
+            pass
         return False
     
     def get_saves_count(self, obj):
+        try:
             return obj.saved_by.count()
+        except AttributeError:
+            return 0
 
     def get_is_saved(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.saved_by.filter(id=request.user.id).exists()
+        try:
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                return obj.saved_by.filter(user=request.user).exists()
+        except AttributeError:
+            pass
         return False
 
-    def validate(self, data):
-        print(f" {data} ")
-        return data
+    # ==========================================
+    # LÓGICA DE USUARIO SEGURA
+    # ==========================================
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        print(f" {ret} ")
-        return ret
+    def get_user_experience(self, obj):
+        # Evita el Error 500 si el usuario aún no tiene un perfil creado en la BBDD
+        if hasattr(obj.user, 'profile'):
+            return obj.user.profile.experience_level
+        return "Piloto"

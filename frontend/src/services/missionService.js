@@ -15,24 +15,22 @@ export const missionService = {
     return res.json();
   },
 
-  // Pide las misiones guardadas
   getSaved: async (token) => {
-    const res = await fetch(`${API_URL}/missions/saved/`, {
+    const res = await fetch(`${API_URL}/social/saved/`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Error al cargar guardados");
     return res.json();
   },
 
-  // Pide las misiones que te gustan
   getLiked: async (token) => {
-    const res = await fetch(`${API_URL}/missions/liked/`, {
+    const res = await fetch(`${API_URL}/social/liked/`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Error al cargar me gusta");
     return res.json();
   },
-
+  
   getMissionById: async (id, token) => {
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token.trim()}`;
@@ -42,30 +40,28 @@ export const missionService = {
     return res.json();
   },
 
-  toggleLike: async (id, token) => {
-    const res = await fetch(`${API_URL}/missions/${id}/like/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+toggleLike: async (missionId, token) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/social/mission/${missionId}/like/`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
-    
-    if (!res.ok) throw new Error("Error al modificar el like");
-    return res.json();
+    if (!response.ok) throw new Error('Error al dar like');
+    return response.json();
   },
 
-  toggleSave: async (id, token) => {
-    const res = await fetch(`${API_URL}/missions/${id}/save/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+toggleSave: async (missionId, token) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/social/mission/${missionId}/save/`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
-    
-    if (!res.ok) throw new Error("Error al guardar la misión");
-    return res.json();
+    if (!response.ok) throw new Error('Error al guardar');
+    return response.json();
   },
 
   uploadMission: async (missionData, token) => {
