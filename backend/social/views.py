@@ -1,17 +1,21 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions, status, generics  # <-- Añadido 'generics'
+from rest_framework import permissions, status, generics
 from django.shortcuts import get_object_or_404
-from .serializers import CommentSerializer
-from .models import Comment
-from missions.models import Mission
-from missions.serializers import MissionSerializer  # <-- Importamos el serializador
-from missions.views import TelemetryListMixin       # <-- Importamos tu mixin estrella
+from django.contrib.auth.models import User 
+from .models import Connection
 
-from .models import Like, Save
+# Modelos y Serializadores de la propi app
+from .models import Comment, Like, Save, Connection  # <--- Añadido Connection
+from .serializers import CommentSerializer
+
+# De la app missions
+from missions.models import Mission
+from missions.serializers import MissionSerializer
+from missions.views import TelemetryListMixin
 
 # ==========================================
-# VISTAS DE BOTONES (TOGGLE)
+# VISTAS DE BOTONES (TOGGLE: Like, Save, Follow)
 # ==========================================
 
 class ToggleLikeView(APIView):
@@ -38,7 +42,6 @@ class ToggleSaveView(APIView):
 
     def post(self, request, mission_id):
         mission = get_object_or_404(Mission, id=mission_id)
-        
         save_obj, created = Save.objects.get_or_create(user=request.user, mission=mission)
 
         if not created:
@@ -52,12 +55,53 @@ class ToggleSaveView(APIView):
             "saves_count": mission.saved_by.count()
         }, status=status.HTTP_200_OK)
 
+
+class ToggleFollowView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, username):
+        # Buscamos al usuario por su username (el que viene en la URL)
+        user_to_follow = get_object_or_404(User, username=username)
+        
+        if request.user == user_to_follow:
+            return Response({"error": "No puedes seguirte a ti mismo"}, status=status.HTTP_400_BAD_REQUEST)
+
+        connection, created = Connection.objects.get_or_create(
+            follower=request.user, 
+            following=user_to_follow
+        )
+
+        if not created:
+            connection.delete()
+            is_following = False
+        else:
+            is_following = True
+
+        return Response({
+            "is_following": is_following,
+            "followers_count": user_to_follow.followers.count(),
+            "following_count": user_to_follow.following.count()
+        }, status=status.HTTP_200_OK)
+
 # ==========================================
-# VISTAS DE LISTADOS PARA EL PERFIL
+# VISTAS DE COMENTARIOS
+# ==========================================
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Comment.objects.filter(mission_id=self.kwargs['mission_id'])
+
+    def perform_create(self, serializer):
+        mission = get_object_or_404(Mission, id=self.kwargs['mission_id'])
+        serializer.save(user=self.request.user, mission=mission)
+
+# ==========================================
+# VISTAS DE LISTADOS (ME GUSTA / GUARDADOS)
 # ==========================================
     
-# social/views.py
-
 class LikedMissionsListView(TelemetryListMixin, generics.ListAPIView):
     serializer_class = MissionSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -73,13 +117,12 @@ class SavedMissionsListView(TelemetryListMixin, generics.ListAPIView):
     def get_queryset(self):
         return Mission.objects.filter(saved_by__user=self.request.user).order_by('-saved_by__created_at')
     
-class CommentListCreateView(generics.ListCreateAPIView):
-    serializer_class = CommentSerializer
+
+class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
+    serializer_class = MissionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Comment.objects.filter(mission_id=self.kwargs['mission_id'])
-
-    def perform_create(self, serializer):
-        mission = get_object_or_404(Mission, id=self.kwargs['mission_id'])
-        serializer.save(user=self.request.user, mission=mission)
+        username = self.kwargs['username']
+        # Filtramos las misiones donde el autor sea el usuario con ese username
+        return Mission.objects.filter(user__username=username).order_by('-date')

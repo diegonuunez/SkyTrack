@@ -20,5 +20,22 @@ export const socialService = {
     });
     if (!res.ok) throw new Error("Error al publicar comentario");
     return res.json();
+  },
+  toggleFollow: async (username, token) => {
+  const response = await fetch(`http://127.0.0.1:8000/api/profile/user/${username}/follow/`, { 
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text(); 
+    console.error("Respuesta del servidor:", errorText);
+    throw new Error('Error en el servidor');
   }
+
+  return response.json();
+},
 };

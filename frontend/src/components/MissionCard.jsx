@@ -6,23 +6,18 @@ import { missionService } from '../services/missionService';
 import CommentSection from '../components/CommentSection';
 
 const MissionCard = ({ mission }) => {
-  // Extraemos token y user del contexto de autenticación
   const { token, user } = useContext(AuthContext); 
   
   const userName = mission?.user_name || 'Piloto';
   const missionName = mission?.name || 'Misión sin nombre';
   const description = mission?.description || 'Sin descripción disponible.';
   const userExperience = mission?.user_experience || 'None';
+  const isFollowingAuthor = mission?.is_following_author || false; 
   
-  // Estados para Likes
   const [isLiked, setIsLiked] = useState(mission?.is_liked || false);
   const [likesCount, setLikesCount] = useState(mission?.likes_count || 0);
-
-  // Estados para Guardados (Bookmarks)
   const [isSaved, setIsSaved] = useState(mission?.is_saved || false);
   const [savesCount, setSavesCount] = useState(mission?.saves_count || 0);
-
-  // Estado para mostrar/ocultar comentarios
   const [showComments, setShowComments] = useState(false);
   
   const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
@@ -35,13 +30,11 @@ const MissionCard = ({ mission }) => {
     const newIsLiked = !isLiked;
     setIsLiked(newIsLiked);
     setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
-
     try {
       await missionService.toggleLike(mission.id, token);
     } catch (error) {
       setIsLiked(!newIsLiked);
       setLikesCount(prev => !newIsLiked ? prev + 1 : prev - 1);
-      console.error("Error al dar like:", error);
     }
   };
 
@@ -53,13 +46,11 @@ const MissionCard = ({ mission }) => {
     const newIsSaved = !isSaved;
     setIsSaved(newIsSaved);
     setSavesCount(prev => newIsSaved ? prev + 1 : prev - 1);
-
     try {
       await missionService.toggleSave(mission.id, token);
     } catch (error) {
       setIsSaved(!newIsSaved);
       setSavesCount(prev => !newIsSaved ? prev + 1 : prev - 1);
-      console.error("Error al guardar:", error);
     }
   };
   
@@ -76,9 +67,16 @@ const MissionCard = ({ mission }) => {
             {userName.charAt(0).toUpperCase()}
           </div>
           <div className="ml-4">
-            <h4 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
-              {userName}
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
+                {userName}
+              </h4>
+              {isFollowingAuthor && (
+                <span className="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-0.5 rounded-md border border-blue-100 uppercase tracking-tighter">
+                  Siguiendo
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-400 uppercase tracking-wider">{userExperience}</p>
           </div>
         </Link>
@@ -107,57 +105,34 @@ const MissionCard = ({ mission }) => {
         )}
       </div>
 
-      {/* 4. Pie de carta (Botones de acción) */}
+      {/* 4. Pie de carta */}
       <div className="flex justify-between items-center pt-5 border-t border-gray-100">
         <div className="flex gap-5">
-          
-          <button 
-            onClick={handleLike}
-            className={`flex items-center gap-1.5 transition-colors ${
-              isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
-            }`}
-          >
+          <button onClick={handleLike} className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}>
             <span className="text-xl">{isLiked ? '❤️' : '🤍'}</span> 
             <span className="font-bold">{likesCount}</span>
           </button>
           
-          {/* Botón para alternar comentarios */}
-          <button 
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors"
-          >
+          <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors">
             <span className="text-xl">💬</span>
             <span className="font-bold">{showComments ? 'Ocultar' : 'Comentar'}</span>
           </button>
 
-          <button 
-            onClick={handleSave}
-            className={`flex items-center gap-1.5 transition-colors ${
-              isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
-            }`}
-          >
+          <button onClick={handleSave} className={`flex items-center gap-1.5 transition-colors ${isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'}`}>
             <span className="text-xl">{isSaved ? '🔖' : '📑'}</span>
             <span className="font-bold">{savesCount}</span>
           </button>
-
         </div>
         
-        <Link 
-          to={`/mission/${mission.id}`} 
-          className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors inline-block text-center"
-        >
+        <Link to={`/mission/${mission.id}`} className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-colors inline-block text-center">
           Ver Detalles
         </Link>
       </div>
 
-      {/* 5. Sección de Comentarios (Se muestra al pulsar el botón de mensaje) */}
+      {/* 5. Renderizado Condicional Corregido */}
       {showComments && (
         <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-          <CommentSection 
-            missionId={mission.id} 
-            token={token} 
-            currentUser={user} 
-          />
+          <CommentSection missionId={mission.id} token={token} currentUser={user} />
         </div>
       )}
     </div>

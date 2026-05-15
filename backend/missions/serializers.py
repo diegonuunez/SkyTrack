@@ -1,4 +1,4 @@
-from rest_framework import serializers  # <--- ESTA ES LA QUE FALTA
+from rest_framework import serializers
 from .models import Mission
 
 class MissionSerializer(serializers.ModelSerializer):
@@ -8,7 +8,8 @@ class MissionSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
-    comments_count = serializers.SerializerMethodField() # <--- NUEVO
+    comments_count = serializers.SerializerMethodField()
+    is_following_author = serializers.SerializerMethodField() 
     
     # Datos de usuario seguros
     user_name = serializers.ReadOnlyField(source='user.username')
@@ -20,16 +21,25 @@ class MissionSerializer(serializers.ModelSerializer):
             'id', 'user_name', 'user_experience', 'user', 'name', 
             'date', 'description', 'drone_model', 
             'likes_count', 'is_liked', 'saves_count', 'is_saved',
-            'comments_count' # <--- NUEVO
+            'comments_count', 'is_following_author' 
         ]
 
     # ==========================================
     # LÓGICA SOCIAL (Acoplamiento Débil)
     # ==========================================
     
+    def get_is_following_author(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated or request.user == obj.user:
+            return False
+        try:
+            from social.models import Connection
+            return Connection.objects.filter(follower=request.user, following=obj.user).exists()
+        except (ImportError, AttributeError):
+            return False
+
     def get_comments_count(self, obj):
         try:
-            # 'comments' será el related_name que definiremos en el modelo Comment
             return obj.comments.count()
         except AttributeError:
             return 0

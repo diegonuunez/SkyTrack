@@ -13,7 +13,7 @@ urlpatterns = [
     
     path('api/', include('users.urls')),
     path('api/users/', include('users.urls')),
-    path('api/missions/', include('missions.urls')),
+path('api/profile/', include('social.urls')),    path('api/missions/', include('missions.urls')),
     path('api/social/', include('social.urls')),    
 ]
 if settings.DEBUG:

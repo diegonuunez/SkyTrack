@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Profile
+from django.db.models import Count
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,30 +29,64 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
 class UserProfileSerializer(serializers.ModelSerializer):
+
     bio = serializers.CharField(source='profile.bio', read_only=True)
     avatar = serializers.ImageField(source='profile.avatar', read_only=True)
     experience_level = serializers.CharField(source='profile.experience_level', read_only=True)
     
     stats = serializers.SerializerMethodField()
+    
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'bio', 'avatar', 'experience_level', 'stats', 'date_joined']
+        fields = [
+            'id', 'username', 'bio', 'avatar', 'experience_level', 
+            'stats', 'date_joined', 'followers_count', 
+            'following_count', 'is_following'
+        ]
 
     def get_stats(self, obj):
-        from django.db.models import Count
-        
+        """Calcula estadísticas de misiones y likes recibidos"""
         try:
             total_missions = obj.missions.count()
-            
+            # Sumamos todos los likes de todas las misiones del usuario
             total_likes = obj.missions.aggregate(total=Count('likes'))['total'] or 0
             
             return {
                 'missions': total_missions,
                 'likes': total_likes
             }
-        except Exception as e:
-            return {
-                'missions': 0,
-                'likes': 0
-            }
+        except Exception:
+            return {'missions': 0, 'likes': 0}
+
+    def get_followers_count(self, obj):
+        """Cuántos usuarios siguen a este piloto"""
+        try:
+            return obj.followers.count()
+        except AttributeError:
+            return 0
+
+    def get_following_count(self, obj):
+        """A cuántos usuarios sigue este piloto"""
+        try:
+            return obj.following.count()
+        except AttributeError:
+            return 0
+
+    def get_is_following(self, obj):
+        """Indica si el usuario que hace la petición ya sigue a este piloto"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            try:
+                # Importación local para evitar importaciones circulares
+                from social.models import Connection
+                return Connection.objects.filter(
+                    follower=request.user, 
+                    following=obj
+                ).exists()
+            except (ImportError, AttributeError):
+                return False
+        return False
