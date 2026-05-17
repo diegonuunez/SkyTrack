@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'missions',
     'users',
     'social',
+    'notification'
 
 ]
 

@@ -129,7 +129,6 @@ const MissionCard = ({ mission }) => {
         </Link>
       </div>
 
-      {/* 5. Renderizado Condicional Corregido */}
       {showComments && (
         <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <CommentSection missionId={mission.id} token={token} currentUser={user} />

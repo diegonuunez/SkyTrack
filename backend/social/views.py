@@ -4,7 +4,7 @@ from rest_framework import permissions, status, generics
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User 
 from .models import Connection
-
+from notification.models import Notification
 # Modelos y Serializadores de la propi app
 from .models import Comment, Like, Save, Connection  # <--- Añadido Connection
 from .serializers import CommentSerializer
@@ -30,6 +30,13 @@ class ToggleLikeView(APIView):
             is_liked = False
         else:
             is_liked = True
+            if request.user != mission.user:
+                Notification.objects.create(
+                    recipient=mission.user, 
+                    sender=request.user,     
+                    notification_type='like',
+                    mission=mission
+                )
 
         return Response({
             "is_liked": is_liked,
@@ -76,6 +83,11 @@ class ToggleFollowView(APIView):
             is_following = False
         else:
             is_following = True
+            Notification.objects.create(
+                recipient=user_to_follow,  
+                sender=request.user,       
+                notification_type='follow'
+            )
 
         return Response({
             "is_following": is_following,
