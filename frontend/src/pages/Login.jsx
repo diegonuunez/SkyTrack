@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react'; // 1. Importa useContext
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext'; // 2. Importa el Contexto
+import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const { setToken } = useContext(AuthContext); // 3. Ahora sí existe
+  const { setToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const login = async (username, password) => {
@@ -24,27 +24,48 @@ const Login = () => {
       localStorage.setItem('token', tokens.access);
       setToken(tokens.access);
       navigate('/');
-    } catch (err) {
-      alert("Usuario o contraseña incorrectos");
+    } catch {
+      alert('Usuario o contraseña incorrectos');
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-lg w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Entrar a SkyTrack</h2>
-        <input 
-          type="text" placeholder="Usuario" className="w-full p-3 mb-4 border rounded"
-          onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-        />
-        <input 
-          type="password" placeholder="Contraseña" className="w-full p-3 mb-6 border rounded"
-          onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-        />
-        <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded font-bold">
-          Iniciar Sesión
-        </button>
-      </form>
+    <div className="login-wrapper">
+      <div className="card login-card anim-scale-in">
+
+        <div className="login-header">
+          <div className="login-logo-icon">🛸</div>
+          <h1 className="login-title">
+            Bienvenido a <span className="text-gradient">SkyTrack</span>
+          </h1>
+          <p className="text-sm text-muted">Inicia sesión para continuar</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            <label className="input-label">Usuario</label>
+            <input
+              type="text"
+              className="input"
+              placeholder="tu_usuario"
+              onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+            />
+          </div>
+          <div className="input-group">
+            <label className="input-label">Contraseña</label>
+            <input
+              type="password"
+              className="input"
+              placeholder="••••••••"
+              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+            />
+          </div>
+          <button type="submit" className="btn btn--primary btn--full btn--lg login-submit">
+            Iniciar Sesión
+          </button>
+        </form>
+
+      </div>
     </div>
   );
 };

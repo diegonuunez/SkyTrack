@@ -1,14 +1,37 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { missionService } from '../services/missionService';
-import MissionCard from '../components/MissionCard'; 
+import MissionCard from '../components/MissionCard';
 import Navbar from '../components/Navbar';
+import '../style/global.css';
+
+const MissionSkeleton = () => (
+  <div className="card flex flex-col gap-4">
+    <div className="skeleton sk-map" />
+    <div className="flex flex-col gap-2">
+      <div className="skeleton sk-title sk-w-60" />
+      <div className="skeleton sk-xs sk-w-40" />
+    </div>
+    <div className="flex gap-2">
+      <div className="skeleton sk-tag sk-w-72" />
+      <div className="skeleton sk-tag sk-w-56" />
+    </div>
+  </div>
+);
+
+const FEED_META = {
+  feed:  { icon: '🛸', empty: 'No hay misiones en el feed todavía.' },
+  saved: { icon: '🔖', empty: 'Aún no has guardado ninguna misión.' },
+  liked: { icon: '❤️', empty: 'Todavía no has dado like a ninguna misión.' },
+};
 
 export const MissionFeedPage = ({ title, feedType }) => {
   const { token } = useContext(AuthContext);
   const [missions, setMissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+
+  const meta = FEED_META[feedType] ?? { icon: '📡', empty: 'No hay misiones para mostrar.' };
 
   useEffect(() => {
     const fetchMissions = async () => {
@@ -16,10 +39,9 @@ export const MissionFeedPage = ({ title, feedType }) => {
       setError(null);
       try {
         let data;
-        if (feedType === 'feed') data = await missionService.getFeed(token);
+        if (feedType === 'feed')  data = await missionService.getFeed(token);
         if (feedType === 'saved') data = await missionService.getSaved(token);
         if (feedType === 'liked') data = await missionService.getLiked(token);
-        
         setMissions(data);
       } catch (err) {
         setError(err.message);
@@ -36,31 +58,65 @@ export const MissionFeedPage = ({ title, feedType }) => {
   }, [feedType, token]);
 
   return (
-    
-    <div className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-8">{title}</h1>
-      {loading && (
-        <div className="text-center py-10 text-gray-500 font-bold animate-pulse">
-          Cargando misiones...
-        </div>
-      )}
+    <>
+      <Navbar />
 
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6">
-          {error}
-        </div>
-      )}
+      <div className="page-wrapper">
+        <div className="container container--md">
 
-      {!loading && !error && missions.length === 0 && (
-        <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-          <p className="text-gray-500 text-lg">No hay misiones para mostrar aquí.</p>
-        </div>
-      )}
+          <div className="anim-fade-up feed-top">
+            <div className="feed-header">
+              <span className="feed-icon">{meta.icon}</span>
+              <h1 className="feed-page-title">
+                <span className="text-gradient">{title}</span>
+              </h1>
+            </div>
+            <div className="divider" />
+          </div>
 
-      {!loading && missions.map(mission => (
-        <MissionCard key={mission.id} mission={mission} />
-      ))}
-    </div>
+          {error && (
+            <div className="alert alert--danger anim-fade-up feed-error">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex flex-col gap-4">
+              <MissionSkeleton />
+              <MissionSkeleton />
+              <MissionSkeleton />
+            </div>
+          )}
+
+          {!loading && !error && missions.length === 0 && (
+            <div className="empty-state card anim-fade-up">
+              <div className="empty-state__icon">{meta.icon}</div>
+              <p className="empty-state__title">Nada por aquí</p>
+              <p className="text-sm text-muted feed-empty-msg">{meta.empty}</p>
+              <a href="/create-mission" className="btn btn--secondary btn--sm">
+                Explorar misiones
+              </a>
+            </div>
+          )}
+
+          {!loading && !error && missions.length > 0 && (
+            <div className="flex flex-col gap-4">
+              {missions.map((mission, i) => (
+                <div
+                  key={mission.id}
+                  className="anim-fade-up"
+                  style={{ '--anim-delay': `${i * 60}ms` }}
+                >
+                  <MissionCard mission={mission} />
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </>
   );
 };
 
