@@ -1,4 +1,11 @@
 from django.contrib import admin
 from .models import Mission
 
-admin.site.register(Mission)
+
+@admin.register(Mission)
+class MissionAdmin(admin.ModelAdmin):
+    list_display    = ('name', 'user', 'date', 'drone_model', 'visibility', 'max_alt_m', 'max_vel_ms')
+    list_filter     = ('visibility', 'drone_model')
+    search_fields   = ('name', 'user__username', 'description')
+    readonly_fields = ('date',)
+    ordering        = ('-date',)

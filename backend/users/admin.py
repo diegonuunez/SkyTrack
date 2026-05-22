@@ -1,5 +1,10 @@
 from django.contrib import admin
 from .models import Profile
 
-# Le decimos a Django que muestre los Perfiles en el panel
-admin.site.register(Profile)
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display    = ('user', 'experience_level', 'location', 'favorite_drone')
+    list_filter     = ('experience_level',)
+    search_fields   = ('user__username', 'user__email', 'location')
+    readonly_fields = ('user',)

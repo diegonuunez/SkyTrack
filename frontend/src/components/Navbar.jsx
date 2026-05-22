@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
-  const { token, logout } = useContext(AuthContext);
+  const { token, user, logout } = useContext(AuthContext);
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
@@ -44,6 +44,16 @@ const Navbar = () => {
               <Link to="/profile" className={`sky-nav-link${location.pathname === '/profile' ? ' active' : ''}`}>
                 <span className="nav-icon">👤</span> Mi Perfil
               </Link>
+              {user?.is_staff && (
+                <a
+                  href="http://127.0.0.1:8000/admin/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="sky-nav-link"
+                >
+                  <span className="nav-icon">⚙️</span> Admin
+                </a>
+              )}
             </div>
           )}
 
