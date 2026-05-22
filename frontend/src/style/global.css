@@ -377,6 +377,9 @@ textarea.input {
   line-height: 1.6;
 }
 
+.input--error { border-color: var(--red, #f87171) !important; }
+.input-error-msg { font-size: var(--text-xs); color: var(--red, #f87171); margin-top: var(--space-1); }
+
 /* ── Badges ──────────────────────────────────────────────── */
 .badge {
   display: inline-flex;

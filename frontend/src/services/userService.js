@@ -1,6 +1,17 @@
 const API_URL = 'http://127.0.0.1:8000/api';
 
 export const userService = {
+  register: async ({ username, email, password, password2 }) => {
+    const res = await fetch(`${API_URL}/users/register/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, password2 }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw data;
+    return data;
+  },
+
   getProfile: async (token) => {
     if (!token) throw new Error("No token provided");
 

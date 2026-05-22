@@ -52,7 +52,7 @@ class TelemetryListMixin:
                 "longitude": p.get('longitude')
             })
 
-        # Inyección
+        
         for mission in missions_list:
             mission['points'] = points_map.get(mission['id'], [])
 

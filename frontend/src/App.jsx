@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import MissionFeedPage from './pages/MissionFeedPage';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Profile from './pages/Profile';
 import PrivateRoute from './components/PrivateRoute';
 import EditProfilePage from './pages/EditProfile';
@@ -12,6 +13,7 @@ function App() {
     <Routes>
       <Route path="/" element={<MissionFeedPage title="Descubre Misiones" feedType="feed" />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/mission/:id" element={<MissionDetailsPage />} />
       <Route path="/saved" element={<PrivateRoute><MissionFeedPage title="Misiones Guardadas" feedType="saved" /></PrivateRoute>} />
       <Route path="/liked" element={<PrivateRoute><MissionFeedPage title="Misiones que te gustan" feedType="liked" /></PrivateRoute>} />

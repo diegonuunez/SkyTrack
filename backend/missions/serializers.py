@@ -3,7 +3,6 @@ from .models import Mission
 
 class MissionSerializer(serializers.ModelSerializer):
     
-    # Campos calculados dinámicamente
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
@@ -11,17 +10,17 @@ class MissionSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     is_following_author = serializers.SerializerMethodField() 
     
-    # Datos de usuario seguros
     user_name = serializers.ReadOnlyField(source='user.username')
     user_experience = serializers.SerializerMethodField() 
 
     class Meta:
         model = Mission
         fields = [
-            'id', 'user_name', 'user_experience', 'user', 'name', 
-            'date', 'description', 'drone_model', 
+            'id', 'user_name', 'user_experience', 'user', 'name',
+            'date', 'description', 'drone_model', 'visibility',
+            'max_alt_m', 'max_vel_ms',
             'likes_count', 'is_liked', 'saves_count', 'is_saved',
-            'comments_count', 'is_following_author' 
+            'comments_count', 'is_following_author'
         ]
 
     # ==========================================

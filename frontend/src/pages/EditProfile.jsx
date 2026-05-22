@@ -17,12 +17,7 @@ export const EditProfilePage = () => {
   });
 
   const [avatar, setAvatar]   = useState(null);
-  const [preview, setPreview] = useState(() => {
-    if (!user.profile?.avatar) return null;
-    return user.profile.avatar.startsWith('http')
-      ? user.profile.avatar
-      : `http://127.0.0.1:8000${user.profile.avatar}`;
-  });
+  const [preview, setPreview] = useState(user.profile?.avatar || null);
 
   useEffect(() => {
     return () => {

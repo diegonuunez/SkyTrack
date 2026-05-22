@@ -4,24 +4,23 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics, permissions
 
-# Usamos get_user_model para mayor seguridad (si usas el User de Django)
 from django.contrib.auth import get_user_model 
 User = get_user_model()
 
 from .models import Profile
-from .serializer import UserSerializer, ProfileSerializer, UserProfileSerializer
+from .serializer import UserSerializer, ProfileSerializer, UserProfileSerializer, RegisterSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
-# Importamos todo de 'missions' de manera uniforme
 from missions.models import Mission
 from missions.serializers import MissionSerializer
 from missions.views import TelemetryListMixin 
 
 
 class UserMeView(APIView):
-    permission_classes = [IsAuthenticated] # Solo si hay token válido
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
     
     def patch(self, request):
@@ -49,7 +48,6 @@ class ProfileUpdateView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        # Devolvemos el usuario actualizado
         user_serializer = UserSerializer(request.user, context={'request': request})
         return Response(user_serializer.data)
 
@@ -66,3 +64,17 @@ class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
     def get_queryset(self):
         username = self.kwargs.get('username')
         return Mission.objects.filter(user__username=username).order_by('-id')
+    
+
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access':  str(refresh.access_token),
+            'refresh': str(refresh),
+        }, status=status.HTTP_201_CREATED)
+        

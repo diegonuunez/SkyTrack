@@ -1,9 +1,58 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { missionService } from '../services/missionService';
 import { AuthContext } from '../context/AuthContext';
 import MapView from '../components/Map';
 import Navbar from '../components/Navbar';
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDuration(secs) {
+  if (!secs || secs <= 0) return null;
+  if (secs < 60) return `${secs}s`;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  if (m < 60) return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+}
+
+function computeFlightMetrics(points) {
+  if (!points || points.length === 0) return { distance: null, duration: null, waypoints: 0 };
+
+  let distance = 0;
+  for (let i = 1; i < points.length; i++) {
+    distance += haversineKm(
+      points[i - 1].latitude, points[i - 1].longitude,
+      points[i].latitude,     points[i].longitude
+    );
+  }
+
+  const timestamps = points.map(p => p.timestamp).filter(Boolean);
+  const duration = timestamps.length >= 2
+    ? formatDuration(Math.round(timestamps[timestamps.length - 1] - timestamps[0]))
+    : null;
+
+  return {
+    distance: distance > 0 ? distance.toFixed(2) : null,
+    duration,
+    waypoints: points.length,
+  };
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 export const MissionDetailsPage = () => {
   const { id }    = useParams();
@@ -15,6 +64,8 @@ export const MissionDetailsPage = () => {
   const [error,   setError]   = useState(null);
 
   const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
+
+  const flightMetrics = useMemo(() => computeFlightMetrics(mission?.points), [mission?.points]);
 
   useEffect(() => {
     const fetchMission = async () => {
@@ -80,25 +131,74 @@ export const MissionDetailsPage = () => {
                 </p>
 
                 <div className="md-stats">
-                  {mission.distance_km && (
+                  {flightMetrics.distance && (
                     <div className="stat-chip">
                       <span>📍</span>
-                      <span className="stat-value">{mission.distance_km} km</span>
+                      <span className="stat-value">{flightMetrics.distance} km</span>
                       <span className="text-muted text-xs">distancia</span>
                     </div>
                   )}
-                  {mission.duration && (
+                  {flightMetrics.duration && (
                     <div className="stat-chip">
                       <span>⏱️</span>
-                      <span className="stat-value">{mission.duration}</span>
+                      <span className="stat-value">{flightMetrics.duration}</span>
                       <span className="text-muted text-xs">duración</span>
                     </div>
                   )}
-                  {mission.max_altitude && (
+                  {mission.max_alt_m > 0 && (
                     <div className="stat-chip">
                       <span>🔼</span>
-                      <span className="stat-value">{mission.max_altitude} m</span>
+                      <span className="stat-value">{mission.max_alt_m.toFixed(1)} m</span>
                       <span className="text-muted text-xs">altitud máx.</span>
+                    </div>
+                  )}
+                  {mission.max_vel_ms > 0 && (
+                    <div className="stat-chip">
+                      <span>💨</span>
+                      <span className="stat-value">{mission.max_vel_ms.toFixed(1)} m/s</span>
+                      <span className="text-muted text-xs">velocidad máx.</span>
+                    </div>
+                  )}
+                  {flightMetrics.waypoints > 0 && (
+                    <div className="stat-chip">
+                      <span>📡</span>
+                      <span className="stat-value">{flightMetrics.waypoints}</span>
+                      <span className="text-muted text-xs">waypoints</span>
+                    </div>
+                  )}
+                  {mission.drone_model && mission.drone_model !== 'Unknown' && (
+                    <div className="stat-chip">
+                      <span>🚁</span>
+                      <span className="stat-value">{mission.drone_model}</span>
+                      <span className="text-muted text-xs">dron</span>
+                    </div>
+                  )}
+                  {formatDate(mission.date) && (
+                    <div className="stat-chip">
+                      <span>📅</span>
+                      <span className="stat-value">{formatDate(mission.date)}</span>
+                      <span className="text-muted text-xs">fecha</span>
+                    </div>
+                  )}
+                  {mission.likes_count > 0 && (
+                    <div className="stat-chip">
+                      <span>❤️</span>
+                      <span className="stat-value">{mission.likes_count}</span>
+                      <span className="text-muted text-xs">likes</span>
+                    </div>
+                  )}
+                  {mission.saves_count > 0 && (
+                    <div className="stat-chip">
+                      <span>🔖</span>
+                      <span className="stat-value">{mission.saves_count}</span>
+                      <span className="text-muted text-xs">guardados</span>
+                    </div>
+                  )}
+                  {mission.comments_count > 0 && (
+                    <div className="stat-chip">
+                      <span>💬</span>
+                      <span className="stat-value">{mission.comments_count}</span>
+                      <span className="text-muted text-xs">comentarios</span>
                     </div>
                   )}
                 </div>

@@ -29,18 +29,13 @@ export const ProfileCard = ({ profileData }) => {
     }
   };
 
-  const getAvatarUrl = (path) => {
-    if (!path) return null;
-    return path.startsWith('http') ? path : `http://127.0.0.1:8000${path}`;
-  };
-
   if (!displayUser) return (
     <div className="card card-center">
       <div className="spinner" />
     </div>
   );
 
-  const avatarSrc = getAvatarUrl(displayUser.profile?.avatar || displayUser.avatar);
+  const avatarSrc = displayUser.profile?.avatar || displayUser.avatar || null;
 
   return (
     <div className="card anim-fade-up overflow-hidden">

@@ -1,12 +1,28 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from .models import Profile
 from django.db.models import Count
+from PIL import Image
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['avatar','bio', 'location', 'favorite_drone', 'experience_level']
+
+    def validate_avatar(self, value):
+        if value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("El avatar no puede superar los 2 MB.")
+        try:
+            img = Image.open(value)
+            if img.format not in ('JPEG', 'PNG', 'WEBP', 'GIF'):
+                raise serializers.ValidationError("Solo se permiten imágenes JPEG, PNG, WEBP o GIF.")
+            value.seek(0)
+        except serializers.ValidationError:
+            raise
+        except Exception:
+            raise serializers.ValidationError("Archivo de imagen no válido.")
+        return value
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer() 
@@ -84,9 +100,33 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 # Importación local para evitar importaciones circulares
                 from social.models import Connection
                 return Connection.objects.filter(
-                    follower=request.user, 
+                    follower=request.user,
                     following=obj
                 ).exists()
             except (ImportError, AttributeError):
                 return False
         return False
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password  = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model  = User
+        fields = ['username', 'email', 'password', 'password2']
+        extra_kwargs = {'email': {'required': False}}
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({'password': 'Las contraseñas no coinciden.'})
+        return attrs
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('Este nombre de usuario ya está en uso.')
+        return value
+
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        return User.objects.create_user(**validated_data)

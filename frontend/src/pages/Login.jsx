@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
@@ -64,6 +64,13 @@ const Login = () => {
             Iniciar Sesión
           </button>
         </form>
+
+        <p className="text-sm text-muted text-center" style={{ marginTop: 'var(--space-4)' }}>
+          ¿No tienes cuenta?{' '}
+          <Link to="/register" className="text-gradient" style={{ fontWeight: 600 }}>
+            Regístrate
+          </Link>
+        </p>
 
       </div>
     </div>
