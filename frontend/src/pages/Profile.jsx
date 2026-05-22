@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { ProfileCard } from '../components/ProfileCard';
 import MissionCard from '../components/MissionCard';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 const Profile = () => {
   const { username } = useParams();
@@ -26,8 +27,8 @@ const Profile = () => {
           'Content-Type': 'application/json',
         };
         const [profileRes, missionsRes] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/profile/${targetUsername}/`, { headers }),
-          fetch(`http://127.0.0.1:8000/api/profile/${targetUsername}/missions/`, { headers }),
+          fetch(`${API_URL}/profile/${targetUsername}/`, { headers }),
+          fetch(`${API_URL}/profile/${targetUsername}/missions/`, { headers }),
         ]);
 
         if (profileRes.ok && missionsRes.ok) {

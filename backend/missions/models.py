@@ -8,6 +8,11 @@ class Mission(models.Model):
     description = models.TextField(blank=True)
     drone_model = models.CharField(max_length=100, default="Unknown")
     visibility = models.CharField(max_length=20, default='public')
+    status = models.CharField(
+        max_length=20,
+        choices=[('in_progress', 'En curso'), ('completed', 'Completada')],
+        default='completed'
+    )
     max_alt_m = models.FloatField(default=0.0)
     max_vel_ms = models.FloatField(default=0.0)
     

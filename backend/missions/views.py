@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -33,23 +32,24 @@ class TelemetryListMixin:
         if not mission_ids:
             return response
 
-        collection = get_telemetry_collection()
-        all_telemetry = list(collection.find(
-            {"mission_id": {"$in": mission_ids}},
-            {"_id": 0, "mission_id": 1, "latitude": 1, "longitude": 1}
-        ))
-
         points_map = {}
-        for p in all_telemetry:
-            m_id = p.get('mission_id')
-            if m_id not in points_map:
-                points_map[m_id] = []
-            points_map[m_id].append({
-                "latitude": p.get('latitude'),
-                "longitude": p.get('longitude')
-            })
+        try:
+            collection = get_telemetry_collection()
+            all_telemetry = list(collection.find(
+                {"mission_id": {"$in": mission_ids}},
+                {"_id": 0, "mission_id": 1, "latitude": 1, "longitude": 1}
+            ))
+            for p in all_telemetry:
+                m_id = p.get('mission_id')
+                if m_id not in points_map:
+                    points_map[m_id] = []
+                points_map[m_id].append({
+                    "latitude": p.get('latitude'),
+                    "longitude": p.get('longitude')
+                })
+        except Exception:
+            pass
 
-        
         for mission in missions_list:
             mission['points'] = points_map.get(mission['id'], [])
 
@@ -63,14 +63,17 @@ class TelemetryRetrieveMixin:
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
         mission_data = response.data
-        
-        collection = get_telemetry_collection()
-        telemetry = list(collection.find(
-            {"mission_id": mission_data['id']},
-            {"_id": 0, "latitude": 1, "longitude": 1, "alt_m": 1, "vel_ms": 1, "timestamp": 1}
-        ).sort("timestamp", 1))
-        
-        mission_data['points'] = telemetry
+
+        try:
+            collection = get_telemetry_collection()
+            telemetry = list(collection.find(
+                {"mission_id": mission_data['id']},
+                {"_id": 0, "latitude": 1, "longitude": 1, "alt_m": 1, "vel_ms": 1, "timestamp": 1}
+            ).sort("timestamp", 1))
+            mission_data['points'] = telemetry
+        except Exception:
+            mission_data['points'] = []
+
         return response
 
 # ==========================================
@@ -151,12 +154,3 @@ class MissionUploadView(APIView):
         except Exception as e:
             return Response({"error": f"Error interno guardando la misión: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def toggle_like(request, pk):
-    mission = Mission.objects.get(pk=pk)
-    if request.user in mission.likes.all():
-        mission.likes.remove(request.user)
-    else:
-        mission.likes.add(request.user) 
-    return Response({'status': 'ok'})

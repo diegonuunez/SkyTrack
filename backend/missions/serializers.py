@@ -17,7 +17,7 @@ class MissionSerializer(serializers.ModelSerializer):
         model = Mission
         fields = [
             'id', 'user_name', 'user_experience', 'user', 'name',
-            'date', 'description', 'drone_model', 'visibility',
+            'date', 'description', 'drone_model', 'visibility', 'status',
             'max_alt_m', 'max_vel_ms',
             'likes_count', 'is_liked', 'saves_count', 'is_saved',
             'comments_count', 'is_following_author'

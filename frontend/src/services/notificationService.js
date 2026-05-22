@@ -1,4 +1,5 @@
-const API_URL = 'http://127.0.0.1:8000/api/notifications';
+import { API_URL as BASE } from '../config';
+const API_URL = `${BASE}/notifications`;
 
 export const notificationService = {
   getNotifications: async (token) => {

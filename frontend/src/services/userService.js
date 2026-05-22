@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000/api';
+import { API_URL } from '../config';
 
 export const userService = {
   register: async ({ username, email, password, password2 }) => {

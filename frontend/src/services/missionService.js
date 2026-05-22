@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000/api';
+import { API_URL } from '../config';
 
 export const missionService = {
   // Pide todas las misiones (Feed principal)
@@ -41,7 +41,7 @@ export const missionService = {
   },
 
 toggleLike: async (missionId, token) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/social/mission/${missionId}/like/`, {
+    const response = await fetch(`${API_URL}/social/mission/${missionId}/like/`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -53,7 +53,7 @@ toggleLike: async (missionId, token) => {
   },
 
 toggleSave: async (missionId, token) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/social/mission/${missionId}/save/`, {
+    const response = await fetch(`${API_URL}/social/mission/${missionId}/save/`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -65,7 +65,7 @@ toggleSave: async (missionId, token) => {
   },
 
   uploadMission: async (missionData, token) => {
-    const response = await fetch('http://127.0.0.1:8000/api/missions/upload/', {
+    const response = await fetch('${API_URL}/missions/upload/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

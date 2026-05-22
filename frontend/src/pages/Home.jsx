@@ -3,6 +3,7 @@ import MissionCard from '../components/MissionCard';
 import Navbar from '../components/Navbar.jsx';
 import AuthContext from '../context/AuthContext';
 import UserBanner from '../components/UserBanner';
+import { API_URL } from '../config';
 
 const MissionSkeleton = () => (
   <div className="card flex flex-col gap-4">
@@ -42,7 +43,7 @@ const Home = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/missions/feed/');
+        const response = await fetch(`${API_URL}/missions/feed/`);
         if (!response.ok) throw new Error(`Error: ${response.status}`);
         const data = await response.json();
         setMissions(data);

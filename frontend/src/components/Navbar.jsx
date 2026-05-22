@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
+import { API_BASE } from '../config';
 
 const Navbar = () => {
   const { token, user, logout } = useContext(AuthContext);
@@ -46,7 +47,7 @@ const Navbar = () => {
               </Link>
               {user?.is_staff && (
                 <a
-                  href="http://127.0.0.1:8000/admin/"
+                  href={`${API_BASE}/admin/`}
                   target="_blank"
                   rel="noreferrer"
                   className="sky-nav-link"
