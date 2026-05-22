@@ -13,9 +13,6 @@ from services.telemetry_service import TelemetryService
 from utils.csv_processor import CSVProcessor
 from utils.db_connector import get_telemetry_collection 
 
-# ==========================================
-# MIXINS (El toque Senior para no repetir código)
-# ==========================================
 
 class TelemetryListMixin:
     """
@@ -83,6 +80,7 @@ class TelemetryRetrieveMixin:
 class MissionFeed(TelemetryListMixin, generics.ListAPIView):
     queryset = Mission.objects.all().order_by('-id')
     serializer_class = MissionSerializer
+    permission_classes = [AllowAny]
 
 class MissionList(TelemetryListMixin, generics.ListCreateAPIView):
     serializer_class = MissionSerializer
@@ -112,6 +110,8 @@ class MissionDetailView(TelemetryRetrieveMixin, generics.RetrieveAPIView):
 
 
 class MissionUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         file = request.FILES.get('file')
         if not file:

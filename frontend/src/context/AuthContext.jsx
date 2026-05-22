@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Error al cargar:", error);
           localStorage.removeItem('token');
+          setToken(null);
         }
       }
       setLoading(false); 

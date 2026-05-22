@@ -1,6 +1,8 @@
+from io import BytesIO
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from .models import Profile
 from django.db.models import Count
 from PIL import Image
@@ -17,19 +19,36 @@ class ProfileSerializer(serializers.ModelSerializer):
             img = Image.open(value)
             if img.format not in ('JPEG', 'PNG', 'WEBP', 'GIF'):
                 raise serializers.ValidationError("Solo se permiten imágenes JPEG, PNG, WEBP o GIF.")
-            value.seek(0)
         except serializers.ValidationError:
             raise
         except Exception:
             raise serializers.ValidationError("Archivo de imagen no válido.")
-        return value
+
+        img.thumbnail((400, 400), Image.LANCZOS)
+
+        save_format = 'GIF' if img.format == 'GIF' else 'JPEG'
+        if save_format == 'JPEG' and img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        buf = BytesIO()
+        img.save(buf, format=save_format, quality=85, optimize=True)
+        buf.seek(0)
+
+        ext          = 'gif' if save_format == 'GIF' else 'jpg'
+        content_type = 'image/gif' if save_format == 'GIF' else 'image/jpeg'
+        stem         = value.name.rsplit('.', 1)[0]
+
+        return InMemoryUploadedFile(
+            buf, 'ImageField', f"{stem}.{ext}",
+            content_type, buf.getbuffer().nbytes, None,
+        )
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer() 
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'profile']
+        fields = ['username', 'email', 'is_staff', 'profile']
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
@@ -97,7 +116,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             try:
-                # Importación local para evitar importaciones circulares
                 from social.models import Connection
                 return Connection.objects.filter(
                     follower=request.user,

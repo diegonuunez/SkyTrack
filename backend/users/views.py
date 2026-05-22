@@ -55,18 +55,22 @@ class ProfileUpdateView(generics.UpdateAPIView):
 class UserProfileDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'username'
 
 
 class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
     serializer_class = MissionSerializer
-    
+    permission_classes = [permissions.AllowAny]
+
     def get_queryset(self):
         username = self.kwargs.get('username')
         return Mission.objects.filter(user__username=username).order_by('-id')
-    
+
 
 class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

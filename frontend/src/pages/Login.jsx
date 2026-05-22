@@ -47,7 +47,7 @@ const Login = () => {
             <input
               type="text"
               className="input"
-              placeholder="tu_usuario"
+              placeholder="Piloto Juan"
               onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             />
           </div>

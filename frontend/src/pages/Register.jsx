@@ -56,7 +56,7 @@ const Register = () => {
             <input
               type="text"
               className={`input${fieldError('username') ? ' input--error' : ''}`}
-              placeholder="tu_usuario"
+              placeholder="Piloto Juan"
               value={form.username}
               onChange={set('username')}
               required
@@ -65,13 +65,14 @@ const Register = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label">Email <span className="text-muted">(opcional)</span></label>
+            <label className="input-label">Email</label>
             <input
               type="email"
               className={`input${fieldError('email') ? ' input--error' : ''}`}
               placeholder="piloto@email.com"
               value={form.email}
               onChange={set('email')}
+              required
             />
             {fieldError('email') && <p className="input-error-msg">{fieldError('email')}</p>}
           </div>
