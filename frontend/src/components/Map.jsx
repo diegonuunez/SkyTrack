@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -58,6 +58,10 @@ const MapComponent = ({ trackData, interactive = false }) => {
             weight={4}
             opacity={0.8}
           />
+        )}
+
+        {trackData && trackData.length > 0 && (
+          <Marker position={trackData[0]} />
         )}
 
         {trackData && trackData.map((pos, i) => {

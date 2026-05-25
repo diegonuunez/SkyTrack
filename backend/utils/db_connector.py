@@ -1,4 +1,3 @@
-# backend/utils/db_connector.py
 import os
 from pymongo import MongoClient
 

@@ -34,9 +34,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         img.save(buf, format=save_format, quality=85, optimize=True)
         buf.seek(0)
 
-        ext          = 'gif' if save_format == 'GIF' else 'jpg'
+        ext = 'gif' if save_format == 'GIF' else 'jpg'
         content_type = 'image/gif' if save_format == 'GIF' else 'image/jpeg'
-        stem         = value.name.rsplit('.', 1)[0]
+        stem = value.name.rsplit('.', 1)[0]
 
         return InMemoryUploadedFile(
             buf, 'ImageField', f"{stem}.{ext}",
@@ -84,10 +84,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_stats(self, obj):
-        """Calcula estadísticas de misiones y likes recibidos"""
         try:
             total_missions = obj.missions.count()
-            # Sumamos todos los likes de todas las misiones del usuario
             total_likes = obj.missions.aggregate(total=Count('likes'))['total'] or 0
             
             return {
@@ -98,21 +96,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return {'missions': 0, 'likes': 0}
 
     def get_followers_count(self, obj):
-        """Cuántos usuarios siguen a este piloto"""
         try:
             return obj.followers.count()
         except AttributeError:
             return 0
 
     def get_following_count(self, obj):
-        """A cuántos usuarios sigue este piloto"""
         try:
             return obj.following.count()
         except AttributeError:
             return 0
 
     def get_is_following(self, obj):
-        """Indica si el usuario que hace la petición ya sigue a este piloto"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             try:

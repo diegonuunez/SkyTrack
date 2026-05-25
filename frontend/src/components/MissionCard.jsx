@@ -55,7 +55,6 @@ const MissionCard = ({ mission }) => {
   return (
     <div className="card card--interactive anim-fade-up">
 
-      {/* Header */}
       <div className="mc-header">
         <Link to={`/profile/${userName}`} className="mc-user-info link-plain">
           <div className="avatar-placeholder mc-avatar">
@@ -72,13 +71,11 @@ const MissionCard = ({ mission }) => {
         <span className={statusBadge}>{statusLabel}</span>
       </div>
 
-      {/* Body */}
       <div className="mc-body">
         <h3 className="font-bold mc-title">{missionName}</h3>
         <p className="mc-desc">{description}</p>
       </div>
 
-      {/* Map */}
       <div className="map-container mc-map">
         {mapCoordinates.length > 0 ? (
           <MapComponent trackData={mapCoordinates} />
@@ -90,7 +87,6 @@ const MissionCard = ({ mission }) => {
         )}
       </div>
 
-      {/* Footer */}
       <div className="mc-footer">
         <div className="mc-actions">
 
@@ -125,7 +121,6 @@ const MissionCard = ({ mission }) => {
         </Link>
       </div>
 
-      {/* Comments */}
       {showComments && (
         <div className="mc-comments-section anim-fade-up">
           <CommentSection missionId={mission.id} token={token} currentUser={user} />

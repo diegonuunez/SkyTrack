@@ -5,18 +5,13 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User 
 from .models import Connection
 from notification.models import Notification
-# Modelos y Serializadores de la propi app
-from .models import Comment, Like, Save, Connection  # <--- Añadido Connection
+from .models import Comment, Like, Save, Connection
 from .serializers import CommentSerializer
 
-# De la app missions
 from missions.models import Mission
 from missions.serializers import MissionSerializer
 from missions.views import TelemetryListMixin
 
-# ==========================================
-# VISTAS DE BOTONES (TOGGLE: Like, Save, Follow)
-# ==========================================
 
 class ToggleLikeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -43,7 +38,6 @@ class ToggleLikeView(APIView):
             "likes_count": mission.likes.count()
         }, status=status.HTTP_200_OK)
 
-
 class ToggleSaveView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -67,7 +61,6 @@ class ToggleFollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, username):
-        # Buscamos al usuario por su username (el que viene en la URL)
         user_to_follow = get_object_or_404(User, username=username)
         
         if request.user == user_to_follow:
@@ -84,8 +77,8 @@ class ToggleFollowView(APIView):
         else:
             is_following = True
             Notification.objects.create(
-                recipient=user_to_follow,  
-                sender=request.user,       
+                recipient=user_to_follow,
+                sender=request.user,
                 notification_type='follow'
             )
 
@@ -94,10 +87,6 @@ class ToggleFollowView(APIView):
             "followers_count": user_to_follow.followers.count(),
             "following_count": user_to_follow.following.count()
         }, status=status.HTTP_200_OK)
-
-# ==========================================
-# VISTAS DE COMENTARIOS
-# ==========================================
 
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
@@ -110,10 +99,6 @@ class CommentListCreateView(generics.ListCreateAPIView):
         mission = get_object_or_404(Mission, id=self.kwargs['mission_id'])
         serializer.save(user=self.request.user, mission=mission)
 
-# ==========================================
-# VISTAS DE LISTADOS (ME GUSTA / GUARDADOS)
-# ==========================================
-    
 class LikedMissionsListView(TelemetryListMixin, generics.ListAPIView):
     serializer_class = MissionSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -136,5 +121,4 @@ class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs['username']
-        # Filtramos las misiones donde el autor sea el usuario con ese username
         return Mission.objects.filter(user__username=username).order_by('-date')

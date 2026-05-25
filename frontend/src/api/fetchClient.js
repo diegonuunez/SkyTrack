@@ -1,9 +1,7 @@
-// src/api/fetchClient.js
-
 export const apiFetch = async (endpoint, options = {}) => {
   const BASE_URL = 'http://localhost:8000/api';
   
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('token');
 
   const headers = {
     'Content-Type': 'application/json',
@@ -23,8 +21,6 @@ export const apiFetch = async (endpoint, options = {}) => {
   if (!response.ok) {
     if (response.status === 401) {
       console.warn("Token inválido o caducado. Cierra sesión.");
-      // localStorage.removeItem('access_token');
-      // window.location.href = '/login';
     }
     
     const errorData = await response.json().catch(() => ({}));

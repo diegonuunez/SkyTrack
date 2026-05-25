@@ -14,10 +14,6 @@ from utils.db_connector import get_telemetry_collection
 
 
 class TelemetryListMixin:
-    """
-    Mixin que sobrescribe 'list' para inyectar los puntos de Mongo 
-    en cualquier vista que devuelva una LISTA de misiones.
-    """
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         missions_data = response.data
@@ -56,10 +52,6 @@ class TelemetryListMixin:
         return response
 
 class TelemetryRetrieveMixin:
-    """
-    Mixin que sobrescribe 'retrieve' para inyectar los puntos de Mongo
-    con todo el detalle (velocidad, altura) cuando se pide UNA SOLA misión.
-    """
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
         mission_data = response.data
@@ -68,17 +60,13 @@ class TelemetryRetrieveMixin:
             collection = get_telemetry_collection()
             telemetry = list(collection.find(
                 {"mission_id": mission_data['id']},
-                {"_id": 0, "latitude": 1, "longitude": 1, "alt_m": 1, "vel_ms": 1, "timestamp": 1}
+                {"_id": 0, "latitude": 1, "longitude": 1, "alt_m": 1, "vel_ms": 1, "timestamp": 1, "battery": 1}
             ).sort("timestamp", 1))
             mission_data['points'] = telemetry
         except Exception:
             mission_data['points'] = []
 
         return response
-
-# ==========================================
-# VISTAS DE LISTADO (Usando el TelemetryListMixin)
-# ==========================================
 
 class MissionFeed(TelemetryListMixin, generics.ListAPIView):
     queryset = Mission.objects.all().order_by('-id')
@@ -91,10 +79,6 @@ class MissionList(TelemetryListMixin, generics.ListCreateAPIView):
     queryset = Mission.objects.all().order_by('-id')
 
 
-# ==========================================
-# VISTAS DE DETALLE (Usando el TelemetryRetrieveMixin)
-# ==========================================
-
 class MissionDetail(TelemetryRetrieveMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MissionSerializer
     permission_classes = [IsAuthenticated, IsOwner]
@@ -106,10 +90,6 @@ class MissionDetailView(TelemetryRetrieveMixin, generics.RetrieveAPIView):
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
     permission_classes = [permissions.AllowAny]
-
-# ==========================================
-# VISTAS DE ACCIÓN Y SUBIDA
-# ==========================================
 
 
 class MissionUploadView(APIView):

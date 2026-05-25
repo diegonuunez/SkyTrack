@@ -1,4 +1,3 @@
-# backend/missions/urls.py
 from django.urls import path
 from .views import MissionList, MissionDetailView, MissionFeed , MissionUploadView
 

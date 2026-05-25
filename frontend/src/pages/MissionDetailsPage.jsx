@@ -27,7 +27,7 @@ function formatDuration(secs) {
 }
 
 function computeFlightMetrics(points) {
-  if (!points || points.length === 0) return { distance: null, duration: null, waypoints: 0 };
+  if (!points || points.length === 0) return { distance: null, duration: null, waypoints: 0, batteryStart: null, batteryEnd: null, batteryUsed: null };
 
   let distance = 0;
   for (let i = 1; i < points.length; i++) {
@@ -42,10 +42,17 @@ function computeFlightMetrics(points) {
     ? formatDuration(Math.round(timestamps[timestamps.length - 1] - timestamps[0]))
     : null;
 
+  const batteryStart = points[0]?.battery ?? null;
+  const batteryEnd   = points[points.length - 1]?.battery ?? null;
+  const batteryUsed  = batteryStart != null && batteryEnd != null ? batteryStart - batteryEnd : null;
+
   return {
     distance: distance > 0 ? distance.toFixed(2) : null,
     duration,
     waypoints: points.length,
+    batteryStart,
+    batteryEnd,
+    batteryUsed,
   };
 }
 
@@ -164,6 +171,27 @@ export const MissionDetailsPage = () => {
                       <span>📡</span>
                       <span className="stat-value">{flightMetrics.waypoints}</span>
                       <span className="text-muted text-xs">waypoints</span>
+                    </div>
+                  )}
+                  {flightMetrics.batteryStart != null && (
+                    <div className="stat-chip">
+                      <span>🔋</span>
+                      <span className="stat-value">{flightMetrics.batteryStart}%</span>
+                      <span className="text-muted text-xs">batería inicio</span>
+                    </div>
+                  )}
+                  {flightMetrics.batteryEnd != null && (
+                    <div className="stat-chip">
+                      <span>🪫</span>
+                      <span className="stat-value">{flightMetrics.batteryEnd}%</span>
+                      <span className="text-muted text-xs">batería fin</span>
+                    </div>
+                  )}
+                  {flightMetrics.batteryUsed != null && flightMetrics.batteryUsed > 0 && (
+                    <div className="stat-chip">
+                      <span>⚡</span>
+                      <span className="stat-value">{flightMetrics.batteryUsed}%</span>
+                      <span className="text-muted text-xs">consumo batería</span>
                     </div>
                   )}
                   {mission.drone_model && mission.drone_model !== 'Unknown' && (

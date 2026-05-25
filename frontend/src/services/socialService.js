@@ -2,14 +2,12 @@ import { API_URL } from '../config';
 const SOCIAL_URL = `${API_URL}/social`;
 
 export const socialService = {
-  // Obtener comentarios de una misión
   getComments: async (missionId) => {
     const res = await fetch(`${SOCIAL_URL}/mission/${missionId}/comments/`);
     if (!res.ok) throw new Error("Error al cargar comentarios");
     return res.json();
   },
 
-  // Publicar un comentario
   postComment: async (missionId, text, token) => {
     const res = await fetch(`${SOCIAL_URL}/mission/${missionId}/comments/`, {
       method: 'POST',

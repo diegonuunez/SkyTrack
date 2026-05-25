@@ -1,7 +1,6 @@
 import { API_URL } from '../config';
 
 export const missionService = {
-  // Pide todas las misiones (Feed principal)
   getFeed: async (token) => {
     const headers = {};
     
@@ -65,7 +64,7 @@ toggleSave: async (missionId, token) => {
   },
 
   uploadMission: async (missionData, token) => {
-    const response = await fetch('${API_URL}/missions/upload/', {
+    const response = await fetch(`${API_URL}/missions/upload/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

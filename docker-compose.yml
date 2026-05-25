@@ -1,5 +1,19 @@
 # docker-compose.yml
 services:
+  postgres:
+    image: postgres:16
+    container_name: skytrack_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: skytrack
+      POSTGRES_USER: skytrack
+      POSTGRES_PASSWORD: skytrack
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
   mongo:
     image: mongo:latest
     container_name: skytrack_mongo
@@ -19,11 +33,12 @@ services:
       - ./backend/.env
     environment:
       - MONGO_URL=mongodb://mongo:27017/
+      - DB_HOST=postgres
+      - DB_NAME=skytrack
+      - DB_USER=skytrack
+      - DB_PASSWORD=skytrack
     volumes:
       - ./backend:/app
-    depends_on:
-      - mongo
-
   frontend:
     build: ./frontend
     container_name: skytrack_frontend
@@ -37,4 +52,5 @@ services:
       - backend
 
 volumes:
+  postgres_data:
   mongo_data:

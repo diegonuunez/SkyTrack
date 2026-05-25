@@ -23,10 +23,6 @@ class MissionSerializer(serializers.ModelSerializer):
             'comments_count', 'is_following_author'
         ]
 
-    # ==========================================
-    # LÓGICA SOCIAL (Acoplamiento Débil)
-    # ==========================================
-    
     def get_is_following_author(self, obj):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated or request.user == obj.user:
@@ -72,10 +68,6 @@ class MissionSerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         return False
-
-    # ==========================================
-    # LÓGICA DE USUARIO SEGURA
-    # ==========================================
 
     def get_user_experience(self, obj):
         if hasattr(obj.user, 'profile'):
