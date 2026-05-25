@@ -69,9 +69,15 @@ class TelemetryRetrieveMixin:
         return response
 
 class MissionFeed(TelemetryListMixin, generics.ListAPIView):
-    queryset = Mission.objects.all().order_by('-id')
     serializer_class = MissionSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = Mission.objects.all().order_by('-id')
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        return queryset
 
 class MissionList(TelemetryListMixin, generics.ListCreateAPIView):
     serializer_class = MissionSerializer

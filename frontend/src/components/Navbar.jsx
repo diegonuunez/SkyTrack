@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
+import SearchBar from './SearchBar';
 import { API_BASE } from '../config';
 
 const Navbar = () => {
@@ -57,6 +58,8 @@ const Navbar = () => {
               )}
             </div>
           )}
+
+          <SearchBar />
 
           <div className="sky-right">
             {token ? (

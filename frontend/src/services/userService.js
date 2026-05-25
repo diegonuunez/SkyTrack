@@ -42,6 +42,12 @@ export const userService = {
       throw error;
     }
   },
+  search: async (query) => {
+    const res = await fetch(`${API_URL}/users/search/?search=${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error('Error al buscar usuarios');
+    return res.json();
+  },
+
   updateProfile: async (formData, token) => {
     const res = await fetch(`${API_URL}/profile/update/`, {
       method: 'PATCH',

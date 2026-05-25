@@ -63,6 +63,14 @@ toggleSave: async (missionId, token) => {
     return response.json();
   },
 
+  search: async (query, token) => {
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token.trim()}`;
+    const res = await fetch(`${API_URL}/missions/feed/?search=${encodeURIComponent(query)}`, { headers });
+    if (!res.ok) throw new Error('Error al buscar misiones');
+    return res.json();
+  },
+
   uploadMission: async (missionData, token) => {
     const response = await fetch(`${API_URL}/missions/upload/`, {
       method: 'POST',

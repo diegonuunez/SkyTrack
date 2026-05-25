@@ -68,6 +68,17 @@ class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
         return Mission.objects.filter(user__username=username).order_by('-id')
 
 
+class UserSearchView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        search = self.request.query_params.get('search', '').strip()
+        if not search:
+            return User.objects.none()
+        return User.objects.filter(username__icontains=search).order_by('username')[:10]
+
+
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
