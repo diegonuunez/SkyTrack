@@ -83,7 +83,27 @@ toggleSave: async (missionId, token) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error al subir la misión');
     return data;
-  }
+  },
 
+  updateMission: async (id, data, token) => {
+    const response = await fetch(`${API_URL}/missions/my/${id}/`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const json = await response.json();
+    if (!response.ok) throw new Error(json.detail || 'Error al actualizar la misión');
+    return json;
+  },
 
+  deleteMission: async (id, token) => {
+    const response = await fetch(`${API_URL}/missions/my/${id}/`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Error al eliminar la misión');
+  },
 };

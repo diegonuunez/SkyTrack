@@ -5,6 +5,12 @@ import { AuthContext } from '../context/AuthContext';
 import MapView from '../components/Map';
 import Navbar from '../components/Navbar';
 
+const EDIT_FIELDS = [
+  { name: 'name',        label: 'Nombre',     type: 'text' },
+  { name: 'drone_model', label: 'Dron',        type: 'text' },
+  { name: 'description', label: 'Descripción', type: 'textarea' },
+];
+
 function haversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -62,13 +68,18 @@ function formatDate(dateStr) {
 }
 
 export const MissionDetailsPage = () => {
-  const { id }    = useParams();
-  const { token } = useContext(AuthContext);
-  const navigate  = useNavigate();
+  const { id }         = useParams();
+  const { token, user } = useContext(AuthContext);
+  const navigate        = useNavigate();
 
-  const [mission, setMission] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
+  const [mission,       setMission]       = useState(null);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm,      setEditForm]      = useState({});
+  const [isSaving,      setIsSaving]      = useState(false);
+  const [editError,     setEditError]     = useState(null);
+  const [isDeleting,    setIsDeleting]    = useState(false);
 
   const mapCoordinates = mission?.points?.map(p => [p.latitude, p.longitude]) || [];
 
@@ -87,6 +98,52 @@ export const MissionDetailsPage = () => {
     };
     fetchMission();
   }, [id, token]);
+
+  const isOwner = user && mission && user.username === mission.user_name;
+
+  const openEdit = () => {
+    setEditForm({
+      name:        mission.name        || '',
+      drone_model: mission.drone_model || '',
+      description: mission.description || '',
+      visibility:  mission.visibility  || 'public',
+      status:      mission.status      || 'completed',
+    });
+    setEditError(null);
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setEditError(null);
+    try {
+      const updated = await missionService.updateMission(mission.id, editForm, token);
+      setMission(prev => ({ ...prev, ...updated }));
+      setShowEditModal(false);
+    } catch (err) {
+      setEditError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`¿Eliminar la misión "${mission.name}"? Esta acción no se puede deshacer.`)) return;
+    setIsDeleting(true);
+    try {
+      await missionService.deleteMission(mission.id, token);
+      navigate('/');
+    } catch {
+      alert('No se pudo eliminar la misión.');
+      setIsDeleting(false);
+    }
+  };
 
   const statusClass = mission?.status === 'completed' ? 'badge badge--success' : 'badge badge--warning';
   const statusLabel = mission?.status === 'completed' ? 'Completada' : (mission?.status || 'En curso');
@@ -119,12 +176,25 @@ export const MissionDetailsPage = () => {
             </>
           ) : !mission ? null : (
             <>
-              <button
-                onClick={() => navigate(-1)}
-                className="btn btn--ghost btn--sm anim-fade-up mb-6"
-              >
-                ← Volver
-              </button>
+              <div className="flex items-center gap-3 mb-6 anim-fade-up">
+                <button onClick={() => navigate(-1)} className="btn btn--ghost btn--sm">
+                  ← Volver
+                </button>
+                {isOwner && (
+                  <>
+                    <button onClick={openEdit} className="btn btn--ghost btn--sm">
+                      ✏️ Editar
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="btn btn--danger btn--sm"
+                    >
+                      {isDeleting ? 'Eliminando...' : '🗑️ Eliminar'}
+                    </button>
+                  </>
+                )}
+              </div>
 
               <div className="card anim-fade-up md-card">
 
@@ -265,6 +335,71 @@ export const MissionDetailsPage = () => {
 
         </div>
       </div>
+
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 className="modal-title">Editar Misión</h2>
+
+            <form onSubmit={handleEditSubmit} className="create-form">
+
+              {EDIT_FIELDS.map(field => (
+                <div key={field.name} className="input-group">
+                  <label className="input-label">{field.label}</label>
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      name={field.name}
+                      rows={3}
+                      value={editForm[field.name]}
+                      onChange={handleEditChange}
+                      className="input"
+                    />
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={editForm[field.name]}
+                      onChange={handleEditChange}
+                      className="input"
+                    />
+                  )}
+                </div>
+              ))}
+
+              <div className="grid-2">
+                <div className="input-group">
+                  <label className="input-label">Visibilidad</label>
+                  <select name="visibility" value={editForm.visibility} onChange={handleEditChange} className="input">
+                    <option value="public">Pública</option>
+                    <option value="private">Privada</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Estado</label>
+                  <select name="status" value={editForm.status} onChange={handleEditChange} className="input">
+                    <option value="completed">Completada</option>
+                    <option value="in_progress">En curso</option>
+                  </select>
+                </div>
+              </div>
+
+              {editError && (
+                <p className="text-sm" style={{ color: 'var(--danger)' }}>{editError}</p>
+              )}
+
+              <div className="create-form-footer">
+                <button type="button" onClick={() => setShowEditModal(false)} className="btn btn--ghost">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={isSaving} className="btn btn--primary">
+                  {isSaving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };

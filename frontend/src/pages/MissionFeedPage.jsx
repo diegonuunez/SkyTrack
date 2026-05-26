@@ -33,6 +33,16 @@ export const MissionFeedPage = ({ title, feedType }) => {
 
   const meta = FEED_META[feedType] ?? { icon: '📡', empty: 'No hay misiones para mostrar.' };
 
+  const removeMission = (id) => {
+    setMissions(prev => prev.filter(m => m.id !== id));
+  };
+
+  const updateMission = (updatedMission) => {
+    setMissions(prev =>
+      prev.map(m => m.id === updatedMission.id ? { ...m, ...updatedMission } : m)
+    );
+  };
+
   useEffect(() => {
     const fetchMissions = async () => {
       setLoading(true);
@@ -108,7 +118,11 @@ export const MissionFeedPage = ({ title, feedType }) => {
                   className="anim-fade-up"
                   style={{ '--anim-delay': `${i * 60}ms` }}
                 >
-                  <MissionCard mission={mission} />
+                  <MissionCard
+                    mission={mission}
+                    onDeleted={removeMission}
+                    onUpdated={updateMission}
+                  />
                 </div>
               ))}
             </div>

@@ -10,7 +10,7 @@ from .serializers import CommentSerializer
 
 from missions.models import Mission
 from missions.serializers import MissionSerializer
-from missions.views import TelemetryListMixin
+from missions.views import TelemetryListMixin, visible_to
 
 
 class ToggleLikeView(APIView):
@@ -104,7 +104,9 @@ class LikedMissionsListView(TelemetryListMixin, generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Mission.objects.filter(likes__user=self.request.user).order_by('-likes__created_at')
+        return Mission.objects.filter(
+            likes__user=self.request.user,
+        ).filter(visible_to(self.request.user)).order_by('-likes__created_at')
 
 
 class SavedMissionsListView(TelemetryListMixin, generics.ListAPIView):
@@ -112,8 +114,10 @@ class SavedMissionsListView(TelemetryListMixin, generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Mission.objects.filter(saved_by__user=self.request.user).order_by('-saved_by__created_at')
-    
+        return Mission.objects.filter(
+            saved_by__user=self.request.user,
+        ).filter(visible_to(self.request.user)).order_by('-saved_by__created_at')
+
 
 class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
     serializer_class = MissionSerializer
@@ -121,4 +125,7 @@ class UserMissionsListView(TelemetryListMixin, generics.ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs['username']
-        return Mission.objects.filter(user__username=username).order_by('-date')
+        viewer = self.request.user
+        if viewer.is_authenticated and viewer.username == username:
+            return Mission.objects.filter(user__username=username).order_by('-date')
+        return Mission.objects.filter(user__username=username, visibility='public').order_by('-date')

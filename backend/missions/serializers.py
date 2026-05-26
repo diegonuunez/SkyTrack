@@ -22,6 +22,7 @@ class MissionSerializer(serializers.ModelSerializer):
             'likes_count', 'is_liked', 'saves_count', 'is_saved',
             'comments_count', 'is_following_author'
         ]
+        read_only_fields = ['user', 'date', 'max_alt_m', 'max_vel_ms']
 
     def get_is_following_author(self, obj):
         request = self.context.get('request')

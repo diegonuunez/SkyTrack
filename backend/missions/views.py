@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from .models import Mission
@@ -10,7 +11,13 @@ from .serializers import MissionSerializer
 from .permissions import IsOwner
 from services.telemetry_service import TelemetryService
 from utils.csv_processor import CSVProcessor
-from utils.db_connector import get_telemetry_collection 
+from utils.db_connector import get_telemetry_collection
+
+
+def visible_to(user):
+    if user and user.is_authenticated:
+        return Q(visibility='public') | Q(user=user)
+    return Q(visibility='public')
 
 
 class TelemetryListMixin:
@@ -73,7 +80,7 @@ class MissionFeed(TelemetryListMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = Mission.objects.all().order_by('-id')
+        queryset = Mission.objects.filter(visible_to(self.request.user)).order_by('-id')
         search = self.request.query_params.get('search', '').strip()
         if search:
             queryset = queryset.filter(name__icontains=search)
@@ -82,7 +89,9 @@ class MissionFeed(TelemetryListMixin, generics.ListAPIView):
 class MissionList(TelemetryListMixin, generics.ListCreateAPIView):
     serializer_class = MissionSerializer
     permission_classes = [AllowAny]
-    queryset = Mission.objects.all().order_by('-id')
+
+    def get_queryset(self):
+        return Mission.objects.filter(visible_to(self.request.user)).order_by('-id')
 
 
 class MissionDetail(TelemetryRetrieveMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -93,9 +102,11 @@ class MissionDetail(TelemetryRetrieveMixin, generics.RetrieveUpdateDestroyAPIVie
         return Mission.objects.filter(user=self.request.user)
 
 class MissionDetailView(TelemetryRetrieveMixin, generics.RetrieveAPIView):
-    queryset = Mission.objects.all()
     serializer_class = MissionSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Mission.objects.filter(visible_to(self.request.user))
 
 
 class MissionUploadView(APIView):

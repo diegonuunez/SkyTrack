@@ -19,6 +19,11 @@ class TelemetryService:
         return result
 
     @staticmethod
+    def delete_mission_telemetry(mission_id):
+        collection = get_telemetry_collection()
+        collection.delete_many({"mission_id": mission_id})
+
+    @staticmethod
     def get_mission_telemetry(mission_id):
         collection = get_telemetry_collection()
         cursor = collection.find(

@@ -15,6 +15,16 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const removeMission = (id) => {
+    setUserMissions(prev => prev.filter(m => m.id !== id));
+  };
+
+  const updateMission = (updatedMission) => {
+    setUserMissions(prev =>
+      prev.map(m => m.id === updatedMission.id ? { ...m, ...updatedMission } : m)
+    );
+  };
+
   useEffect(() => {
     const fetchProfileAndMissions = async () => {
       setLoading(true);
@@ -83,7 +93,11 @@ const Profile = () => {
                         className="anim-fade-up"
                         style={{ '--anim-delay': `${i * 60}ms` }}
                       >
-                        <MissionCard mission={mission} />
+                        <MissionCard
+                          mission={mission}
+                          onDeleted={removeMission}
+                          onUpdated={updateMission}
+                        />
                       </div>
                     ))}
                   </div>
