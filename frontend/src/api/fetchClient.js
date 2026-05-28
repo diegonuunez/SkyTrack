@@ -23,8 +23,7 @@ const tryRefresh = async () => {
   return data.access;
 };
 
-export const apiFetch = async (endpoint, options = {}) => {
-  const isFormData = options.body instanceof FormData;
+const doFetch = async (endpoint, options, isFormData) => {
   let token = localStorage.getItem('token');
 
   let response = await fetch(`${API_URL}${endpoint}`, {
@@ -40,6 +39,20 @@ export const apiFetch = async (endpoint, options = {}) => {
         headers: buildHeaders(newToken, isFormData, options.headers),
       });
     }
+  }
+
+  return response;
+};
+
+export const apiFetch = async (endpoint, options = {}) => {
+  const isFormData = options.body instanceof FormData;
+
+  let response;
+  try {
+    response = await doFetch(endpoint, options, isFormData);
+  } catch {
+    await new Promise((r) => setTimeout(r, 800));
+    response = await doFetch(endpoint, options, isFormData);
   }
 
   if (!response.ok) {
