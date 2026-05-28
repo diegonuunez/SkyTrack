@@ -4,7 +4,7 @@ import { notificationService } from '../services/notificationService';
 import { Link } from 'react-router-dom';
 
 const NotificationDropdown = () => {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -12,21 +12,21 @@ const NotificationDropdown = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const loadNotifications = async () => {
-    if (!token) return;
+    if (!user) return;
     try {
-      const data = await notificationService.getNotifications(token);
+      const data = await notificationService.getNotifications();
       setNotifications(data);
     } catch (err) {
       console.error('Error al traer notificaciones:', err);
     }
   };
 
-  useEffect(() => { loadNotifications(); }, [token]);
+  useEffect(() => { loadNotifications(); }, [user]);
 
   const handleToggle = async () => {
     if (!isOpen && unreadCount > 0) {
       try {
-        await notificationService.markAsRead(token);
+        await notificationService.markAsRead();
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       } catch (err) {
         console.error('Error al marcar como leídas:', err);

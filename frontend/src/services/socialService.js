@@ -1,41 +1,26 @@
-import { API_URL } from '../config';
-const SOCIAL_URL = `${API_URL}/social`;
+import { apiFetch } from '../api/fetchClient';
 
 export const socialService = {
+  getSaved: async () => {
+    return apiFetch('/social/saved/');
+  },
+
+  getLiked: async () => {
+    return apiFetch('/social/liked/');
+  },
+
   getComments: async (missionId) => {
-    const res = await fetch(`${SOCIAL_URL}/mission/${missionId}/comments/`);
-    if (!res.ok) throw new Error("Error al cargar comentarios");
-    return res.json();
+    return apiFetch(`/social/mission/${missionId}/comments/`);
   },
 
-  postComment: async (missionId, text, token) => {
-    const res = await fetch(`${SOCIAL_URL}/mission/${missionId}/comments/`, {
+  postComment: async (missionId, text) => {
+    return apiFetch(`/social/mission/${missionId}/comments/`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text }),
     });
-    if (!res.ok) throw new Error("Error al publicar comentario");
-    return res.json();
   },
-  toggleFollow: async (username, token) => {
-  const response = await fetch(`${API_URL}/profile/user/${username}/follow/`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    
-  });
 
-  if (!response.ok) {
-    const errorText = await response.text(); 
-    console.error("Respuesta del servidor:", errorText);
-    throw new Error('Error en el servidor');
-  }
-
-  return response.json();
-},
+  toggleFollow: async (username) => {
+    return apiFetch(`/profile/user/${username}/follow/`, { method: 'POST' });
+  },
 };

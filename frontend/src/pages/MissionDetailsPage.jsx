@@ -88,7 +88,7 @@ export const MissionDetailsPage = () => {
   useEffect(() => {
     const fetchMission = async () => {
       try {
-        const data = await missionService.getMissionById(id, token);
+        const data = await missionService.getMissionById(id);
         setMission(data);
       } catch {
         setError('No se pudo cargar la misión. Puede que haya sido eliminada.');
@@ -123,7 +123,7 @@ export const MissionDetailsPage = () => {
     setIsSaving(true);
     setEditError(null);
     try {
-      const updated = await missionService.updateMission(mission.id, editForm, token);
+      const updated = await missionService.updateMission(mission.id, editForm);
       setMission(prev => ({ ...prev, ...updated }));
       setShowEditModal(false);
     } catch (err) {
@@ -137,7 +137,7 @@ export const MissionDetailsPage = () => {
     if (!window.confirm(`¿Eliminar la misión "${mission.name}"? Esta acción no se puede deshacer.`)) return;
     setIsDeleting(true);
     try {
-      await missionService.deleteMission(mission.id, token);
+      await missionService.deleteMission(mission.id);
       navigate('/');
     } catch {
       alert('No se pudo eliminar la misión.');

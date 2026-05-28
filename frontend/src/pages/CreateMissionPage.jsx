@@ -7,7 +7,7 @@ import Navbar from '../components/Navbar';
 export const CreateMissionPage = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const { token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -46,7 +46,7 @@ export const CreateMissionPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file)  { alert('Por favor, sube un archivo .csv con la ruta de la misión.'); return; }
-    if (!token) { alert('Debes iniciar sesión para crear una misión.'); return; }
+    if (!user)  { alert('Debes iniciar sesión para crear una misión.'); return; }
 
     setIsSubmitting(true);
     const dataToSend = new FormData();
@@ -57,7 +57,7 @@ export const CreateMissionPage = () => {
     dataToSend.append('file',        file);
 
     try {
-      await missionService.uploadMission(dataToSend, token);
+      await missionService.uploadMission(dataToSend);
       alert('¡Misión publicada con éxito!');
       navigate('/');
     } catch (error) {

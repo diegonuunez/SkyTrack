@@ -3,7 +3,7 @@ import MissionCard from '../components/MissionCard';
 import Navbar from '../components/Navbar.jsx';
 import AuthContext from '../context/AuthContext';
 import UserBanner from '../components/UserBanner';
-import { API_URL } from '../config';
+import { missionService } from '../services/missionService';
 
 const MissionSkeleton = () => (
   <div className="card flex flex-col gap-4">
@@ -43,9 +43,7 @@ const Home = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const response = await fetch(`${API_URL}/missions/feed/`);
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        const data = await response.json();
+        const data = await missionService.getFeed();
         setMissions(data);
       } catch (error) {
         console.error('Error al cargar el feed:', error);

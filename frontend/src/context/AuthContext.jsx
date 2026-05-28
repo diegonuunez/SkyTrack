@@ -1,18 +1,23 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import { userService } from '../services/userService';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(null);
+  const [user, setUser]   = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  const logout = () => {
-      localStorage.removeItem('token');
-      setToken(null);
-      setUser(null);
-    };
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('auth:logout', logout);
+    return () => window.removeEventListener('auth:logout', logout);
+  }, [logout]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -20,24 +25,23 @@ export const AuthProvider = ({ children }) => {
       const savedToken = localStorage.getItem('token');
       if (savedToken) {
         try {
-          const userData = await userService.getProfile(savedToken);
+          const userData = await userService.getProfile();
           setUser(userData);
-        } catch (error) {
-          console.error("Error al cargar:", error);
-          localStorage.removeItem('token');
-          setToken(null);
+        } catch {
+          logout();
         }
       }
-      setLoading(false); 
+      setLoading(false);
     };
 
     loadUser();
-  }, [token]);
+  }, [token, logout]);
 
   return (
-    <AuthContext.Provider value={{ token, setToken, user, setUser, loading, logout}}>
+    <AuthContext.Provider value={{ token, setToken, user, setUser, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
 export default AuthContext;

@@ -4,11 +4,11 @@ import Navbar from '../components/Navbar';
 import { ProfileCard } from '../components/ProfileCard';
 import MissionCard from '../components/MissionCard';
 import { AuthContext } from '../context/AuthContext';
-import { API_URL } from '../config';
+import { userService } from '../services/userService';
 
 const Profile = () => {
   const { username } = useParams();
-  const { user: currentUser, token } = useContext(AuthContext);
+  const { user: currentUser } = useContext(AuthContext);
 
   const [profileData, setProfileData] = useState(null);
   const [userMissions, setUserMissions] = useState([]);
@@ -32,30 +32,21 @@ const Profile = () => {
       if (!targetUsername) { setLoading(false); return; }
 
       try {
-        const headers = {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        };
-        const [profileRes, missionsRes] = await Promise.all([
-          fetch(`${API_URL}/profile/${targetUsername}/`, { headers }),
-          fetch(`${API_URL}/profile/${targetUsername}/missions/`, { headers }),
+        const [profile, missions] = await Promise.all([
+          userService.getPublicProfile(targetUsername),
+          userService.getPublicMissions(targetUsername),
         ]);
-
-        if (profileRes.ok && missionsRes.ok) {
-          setProfileData(await profileRes.json());
-          setUserMissions(await missionsRes.json());
-        } else {
-          setError('No se pudo cargar la información del piloto.');
-        }
+        setProfileData(profile);
+        setUserMissions(missions);
       } catch {
-        setError('Error de conexión con el cielo... revisa tu servidor.');
+        setError('No se pudo cargar la información del piloto.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfileAndMissions();
-  }, [username, currentUser, token]);
+  }, [username, currentUser]);
 
   return (
     <>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { socialService } from '../services/socialService';
 
-const CommentSection = ({ missionId, token, currentUser }) => {
+const CommentSection = ({ missionId, currentUser }) => {
   const [comments, setComments]     = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading]       = useState(true);
@@ -23,7 +23,7 @@ const CommentSection = ({ missionId, token, currentUser }) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     try {
-      const created = await socialService.postComment(missionId, newComment, token);
+      const created = await socialService.postComment(missionId, newComment);
       setComments([created, ...comments]);
       setNewComment('');
     } catch {
@@ -39,7 +39,7 @@ const CommentSection = ({ missionId, token, currentUser }) => {
         💬 Comentarios ({comments.length})
       </h4>
 
-      {token ? (
+      {currentUser ? (
         <form onSubmit={handleSubmit} className="comment-form">
           <input
             type="text"

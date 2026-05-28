@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import { missionService } from '../services/missionService';
 import { userService } from '../services/userService';
 
@@ -14,7 +13,6 @@ const useDebounce = (value, delay) => {
 };
 
 const SearchBar = () => {
-  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [missions, setMissions] = useState([]);
@@ -36,7 +34,7 @@ const SearchBar = () => {
     setLoading(true);
 
     Promise.all([
-      missionService.search(debouncedQuery, token).catch(() => []),
+      missionService.search(debouncedQuery).catch(() => []),
       userService.search(debouncedQuery).catch(() => []),
     ]).then(([m, u]) => {
       if (cancelled) return;
@@ -47,7 +45,7 @@ const SearchBar = () => {
     });
 
     return () => { cancelled = true; };
-  }, [debouncedQuery, token]);
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const handler = (e) => {

@@ -1,18 +1,11 @@
-import { API_URL as BASE } from '../config';
-const API_URL = `${BASE}/notifications`;
+import { apiFetch } from '../api/fetchClient';
 
 export const notificationService = {
-  getNotifications: async (token) => {
-    const response = await fetch(`${API_URL}/`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    return response.json();
+  getNotifications: async () => {
+    return apiFetch('/notifications/');
   },
-  markAsRead: async (token) => {
-    const response = await fetch(`${API_URL}/read/`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    return response.json();
-  }
+
+  markAsRead: async () => {
+    return apiFetch('/notifications/read/', { method: 'POST' });
+  },
 };

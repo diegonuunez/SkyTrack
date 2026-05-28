@@ -20,7 +20,7 @@ export const ProfileCard = ({ profileData }) => {
   const handleFollow = async () => {
     if (!token) { alert('Debes iniciar sesión para seguir a otros pilotos'); return; }
     try {
-      const data = await socialService.toggleFollow(displayUser.username, token);
+      const data = await socialService.toggleFollow(displayUser.username);
       setIsFollowing(data.is_following);
       setFollowersCount(data.followers_count);
       setFollowingCount(data.following_count);

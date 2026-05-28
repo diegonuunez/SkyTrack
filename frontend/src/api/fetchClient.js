@@ -1,10 +1,11 @@
+import { API_URL } from '../config';
+
 export const apiFetch = async (endpoint, options = {}) => {
-  const BASE_URL = 'http://localhost:8000/api';
-  
   const token = localStorage.getItem('token');
+  const isFormData = options.body instanceof FormData;
 
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
 
@@ -12,22 +13,21 @@ export const apiFetch = async (endpoint, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
   });
 
- 
   if (!response.ok) {
     if (response.status === 401) {
-      console.warn("Token inválido o caducado. Cierra sesión.");
+      window.dispatchEvent(new Event('auth:logout'));
     }
-    
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Error en la petición al servidor');
+    const error = new Error(errorData.detail || errorData.error || 'Error en la petición al servidor');
+    error.data = errorData;
+    throw error;
   }
-  if (response.status !== 204) {
-      return await response.json();
-  }
-  return null;
+
+  if (response.status === 204) return null;
+  return response.json();
 };

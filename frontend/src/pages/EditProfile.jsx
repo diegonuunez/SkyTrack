@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 export const EditProfilePage = () => {
-  const { user, setUser, token } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
@@ -40,7 +40,7 @@ export const EditProfilePage = () => {
     if (avatar) data.append('avatar', avatar);
 
     try {
-      const responseData = await userService.updateProfile(data, token);
+      const responseData = await userService.updateProfile(data);
       setUser((prevUser) => {
         if (responseData.username) return responseData;
         return { ...prevUser, profile: responseData };

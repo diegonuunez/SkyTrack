@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { missionService } from '../services/missionService';
+import { socialService } from '../services/socialService';
 import MissionCard from '../components/MissionCard';
 import Navbar from '../components/Navbar';
 import '../style/global.css';
@@ -26,7 +27,7 @@ const FEED_META = {
 };
 
 export const MissionFeedPage = ({ title, feedType }) => {
-  const { token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [missions, setMissions] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
@@ -49,9 +50,9 @@ export const MissionFeedPage = ({ title, feedType }) => {
       setError(null);
       try {
         let data;
-        if (feedType === 'feed')  data = await missionService.getFeed(token);
-        if (feedType === 'saved') data = await missionService.getSaved(token);
-        if (feedType === 'liked') data = await missionService.getLiked(token);
+        if (feedType === 'feed')  data = await missionService.getFeed();
+        if (feedType === 'saved') data = await socialService.getSaved();
+        if (feedType === 'liked') data = await socialService.getLiked();
         setMissions(data);
       } catch (err) {
         setError(err.message);
@@ -60,12 +61,12 @@ export const MissionFeedPage = ({ title, feedType }) => {
       }
     };
 
-    if (feedType === 'feed' || token) {
+    if (feedType === 'feed' || user) {
       fetchMissions();
     } else {
       setLoading(false);
     }
-  }, [feedType, token]);
+  }, [feedType, user]);
 
   return (
     <>

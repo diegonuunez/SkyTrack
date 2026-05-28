@@ -42,7 +42,7 @@ const MissionCard = ({ mission, onDeleted, onUpdated }) => {
     setIsLiked(next);
     setLikesCount(prev => next ? prev + 1 : prev - 1);
     try {
-      await missionService.toggleLike(missionData.id, token);
+      await missionService.toggleLike(missionData.id);
     } catch {
       setIsLiked(!next);
       setLikesCount(prev => !next ? prev + 1 : prev - 1);
@@ -55,7 +55,7 @@ const MissionCard = ({ mission, onDeleted, onUpdated }) => {
     setIsSaved(next);
     setSavesCount(prev => next ? prev + 1 : prev - 1);
     try {
-      await missionService.toggleSave(missionData.id, token);
+      await missionService.toggleSave(missionData.id);
     } catch {
       setIsSaved(!next);
       setSavesCount(prev => !next ? prev + 1 : prev - 1);
@@ -84,7 +84,7 @@ const MissionCard = ({ mission, onDeleted, onUpdated }) => {
     setIsSaving(true);
     setEditError(null);
     try {
-      const updated = await missionService.updateMission(missionData.id, editForm, token);
+      const updated = await missionService.updateMission(missionData.id, editForm);
       setMissionData(prev => ({ ...prev, ...updated }));
       setShowEditModal(false);
       if (onUpdated) onUpdated(updated);
@@ -99,7 +99,7 @@ const MissionCard = ({ mission, onDeleted, onUpdated }) => {
     if (!window.confirm(`¿Eliminar la misión "${missionData.name}"? Esta acción no se puede deshacer.`)) return;
     setIsDeleting(true);
     try {
-      await missionService.deleteMission(missionData.id, token);
+      await missionService.deleteMission(missionData.id);
       if (onDeleted) onDeleted(missionData.id);
     } catch {
       alert('No se pudo eliminar la misión.');
@@ -199,7 +199,7 @@ const MissionCard = ({ mission, onDeleted, onUpdated }) => {
 
         {showComments && (
           <div className="mc-comments-section anim-fade-up">
-            <CommentSection missionId={missionData.id} token={token} currentUser={user} />
+            <CommentSection missionId={missionData.id} currentUser={user} />
           </div>
         )}
 

@@ -1,27 +1,17 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { API_URL } from '../config';
+import { userService } from '../services/userService';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const { setToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const login = async (username, password) => {
-    const response = await fetch(`${API_URL}/token/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    if (!response.ok) throw new Error('Error');
-    return response.json();
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const tokens = await login(credentials.username, credentials.password);
+      const tokens = await userService.login(credentials.username, credentials.password);
       localStorage.setItem('token', tokens.access);
       setToken(tokens.access);
       navigate('/');
