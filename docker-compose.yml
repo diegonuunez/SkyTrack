@@ -12,11 +12,7 @@ services:
       POSTGRES_PASSWORD: skytrack
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U skytrack -d skytrack"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+
 
   mongo:
     image: mongo:latest
@@ -26,11 +22,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   backend:
     build: ./backend
@@ -48,12 +39,6 @@ services:
       - DB_PASSWORD=skytrack
     volumes:
       - ./backend:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongo:
-        condition: service_healthy
-
   frontend:
     build: ./frontend
     container_name: skytrack_frontend
