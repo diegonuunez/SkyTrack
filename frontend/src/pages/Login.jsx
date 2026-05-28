@@ -13,6 +13,7 @@ const Login = () => {
     try {
       const tokens = await userService.login(credentials.username, credentials.password);
       localStorage.setItem('token', tokens.access);
+      localStorage.setItem('refresh', tokens.refresh);
       setToken(tokens.access);
       navigate('/');
     } catch {

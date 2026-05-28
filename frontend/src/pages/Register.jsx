@@ -20,6 +20,7 @@ const Register = () => {
     try {
       const tokens = await userService.register(form);
       localStorage.setItem('token', tokens.access);
+      localStorage.setItem('refresh', tokens.refresh);
       setToken(tokens.access);
       navigate('/');
     } catch (err) {

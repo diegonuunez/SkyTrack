@@ -1,22 +1,46 @@
 import { API_URL } from '../config';
 
-export const apiFetch = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('token');
-  const isFormData = options.body instanceof FormData;
+const buildHeaders = (token, isFormData, extra = {}) => ({
+  ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  ...extra,
+});
 
-  const headers = {
-    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-    ...options.headers,
-  };
+const tryRefresh = async () => {
+  const refresh = localStorage.getItem('refresh');
+  if (!refresh) return null;
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
+  const res = await fetch(`${API_URL}/token/refresh/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh }),
   });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  localStorage.setItem('token', data.access);
+  return data.access;
+};
+
+export const apiFetch = async (endpoint, options = {}) => {
+  const isFormData = options.body instanceof FormData;
+  let token = localStorage.getItem('token');
+
+  let response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers: buildHeaders(token, isFormData, options.headers),
+  });
+
+  if (response.status === 401) {
+    const newToken = await tryRefresh();
+    if (newToken) {
+      response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers: buildHeaders(newToken, isFormData, options.headers),
+      });
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401) {

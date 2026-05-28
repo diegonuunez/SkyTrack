@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh');
     setToken(null);
     setUser(null);
   }, []);
